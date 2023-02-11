@@ -28,7 +28,10 @@ public final class ValorantData extends JavaPlugin {
     }
     
     public void deleteData(Player player) {
-        dataList.removeIf(data -> data.getPlayer() == player);
+        dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).forEach(stats -> {
+            stats.saveData();
+            dataList.remove(stats);
+        });
     }
     
     public StatData getData(Player player) {
