@@ -48,9 +48,9 @@ public final class ValorantData extends JavaPlugin {
         long start = System.nanoTime();
         players.forEach(this::saveData);
         long end = System.nanoTime();
-        double ms = (float) (end - start)/1000000;
+        double ms = DataUtils.round((float) (end - start)/1000000, 2);
         staff.forEach(player -> {
-            player.sendMessage(String.format(Messages.ADMIN_SAVED_DATA.getMessage(), players.size(), ms, ms/players.size()));
+            player.sendMessage(String.format(Messages.ADMIN_SAVED_DATA.getMessage(), players.size(), ms, DataUtils.round(ms/players.size(), 2)));
         });
     }
 }

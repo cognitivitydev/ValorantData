@@ -3,7 +3,7 @@ package dev.mj80.valorant.valorantdata.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import dev.mj80.valorant.valorantdata.JsonUtils;
+import dev.mj80.valorant.valorantdata.DataUtils;
 import dev.mj80.valorant.valorantdata.Messages;
 
 import java.text.SimpleDateFormat;
@@ -93,7 +93,7 @@ public class StatManager {
     public void saveData(StatData data) {
         long start = System.currentTimeMillis();
         data.getPlayer().sendMessage(Messages.SAVING_DATA.getMessage());
-        JsonObject json = JsonUtils.parseJSON(data.getFile());
+        JsonObject json = DataUtils.parseJSON(data.getFile());
         assert json != null;
         JsonArray statistics = json.getAsJsonArray("data").get(1).getAsJsonObject().getAsJsonArray("statistics");
         set(statistics, 0, "kills", data.getKills());
@@ -105,18 +105,18 @@ public class StatManager {
         set(statistics, 6, "loses", data.getLoses());
         set(statistics, 7, "damageDealt", data.getDamageDealt());
         set(statistics, 8, "damageReceived", data.getDamageReceived());
-        JsonUtils.writeJSONObject(data.getFile(), json);
+        DataUtils.writeJSONObject(data.getFile(), json);
         data.getPlayer().sendMessage(String.format(Messages.SAVED_DATA.getMessage(), System.currentTimeMillis() - start));
     }
     
     public void updateData(StatData data) {
-        JsonObject dataFile = JsonUtils.parseJSON(data.getFile());
+        JsonObject dataFile = DataUtils.parseJSON(data.getFile());
         assert dataFile != null;
         JsonArray nameHistory = dataFile.getAsJsonArray("data").get(0).getAsJsonObject()
                 .getAsJsonArray("profile").get(2).getAsJsonObject()
                 .getAsJsonArray("nameHistory");
         if(!nameHistory.contains(new JsonPrimitive(data.getPlayer().getName()))) nameHistory.add(data.getPlayer().getName());
-        JsonUtils.writeJSONObject(data.getFile(), dataFile);
+        DataUtils.writeJSONObject(data.getFile(), dataFile);
     }
     
     private void set(JsonArray jsonArray, int index, String property, Number value) {

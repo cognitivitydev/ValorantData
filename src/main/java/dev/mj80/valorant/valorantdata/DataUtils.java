@@ -11,7 +11,7 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
-public class JsonUtils {
+public class DataUtils {
     public static JsonObject parseJSON(File file) {
         try {
             return (JsonObject) new JsonParser().parse(new FileReader(file.getCanonicalPath()));
@@ -60,5 +60,12 @@ public class JsonUtils {
             exception.printStackTrace();
             return "-";
         }
+    }
+    
+    public static double round(float n, int r) {
+        return Math.round(n * Math.pow(10, r)) / Math.pow(10, r);
+    }
+    public static double round(double n, int r) {
+        return Math.round(n * Math.pow(10, r)) / Math.pow(10, r);
     }
 }

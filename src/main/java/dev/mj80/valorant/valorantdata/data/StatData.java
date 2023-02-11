@@ -3,7 +3,7 @@ package dev.mj80.valorant.valorantdata.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import dev.mj80.valorant.valorantdata.JsonUtils;
+import dev.mj80.valorant.valorantdata.DataUtils;
 import dev.mj80.valorant.valorantdata.Messages;
 import dev.mj80.valorant.valorantdata.ValorantData;
 import lombok.Getter;
@@ -28,8 +28,8 @@ public class StatData {
         file = new File(ValorantData.getDataPath() + File.separator + player.getUniqueId() + ".json");
         try {
             file.getParentFile().mkdirs();
-            if (file.createNewFile() || JsonUtils.readFile(file).equals("-")) {
-                JsonUtils.writeJSONObject(file, createData());
+            if (file.createNewFile() || DataUtils.readFile(file).equals("-")) {
+                DataUtils.writeJSONObject(file, createData());
             }
         } catch(IOException e) {
             player.sendMessage(String.format(Messages.ERROR_CREATING_FILE.getMessage(), player.getName(), player.getUniqueId(), System.currentTimeMillis()));
@@ -120,7 +120,7 @@ public class StatData {
     public void saveData() {
         long start = System.currentTimeMillis();
         player.sendMessage(Messages.SAVING_DATA.getMessage());
-        JsonObject data = JsonUtils.parseJSON(file);
+        JsonObject data = DataUtils.parseJSON(file);
         assert data != null;
         JsonArray statistics = data.getAsJsonArray("data").get(1).getAsJsonObject().getAsJsonArray("statistics");
         set(statistics, 0, "kills", kills);
@@ -132,18 +132,18 @@ public class StatData {
         set(statistics, 6, "loses", loses);
         set(statistics, 7, "damageDealt", damageDealt);
         set(statistics, 8, "damageReceived", damageReceived);
-        JsonUtils.writeJSONObject(file, data);
+        DataUtils.writeJSONObject(file, data);
         player.sendMessage(String.format(Messages.SAVED_DATA.getMessage(), System.currentTimeMillis() - start));
     }
     
     public void updateData() {
-        JsonObject dataFile = JsonUtils.parseJSON(file);
+        JsonObject dataFile = DataUtils.parseJSON(file);
         assert dataFile != null;
         JsonArray nameHistory = dataFile.getAsJsonArray("data").get(0).getAsJsonObject()
                 .getAsJsonArray("profile").get(2).getAsJsonObject()
                 .getAsJsonArray("nameHistory");
         if(!nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
-        JsonUtils.writeJSONObject(file, dataFile);
+        DataUtils.writeJSONObject(file, dataFile);
     }
     
     private void set(JsonArray jsonArray, int index, String property, Number value) {
