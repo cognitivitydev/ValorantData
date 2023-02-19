@@ -142,6 +142,8 @@ public class StatData {
         set(statistics, 6, "loses", loses);
         set(statistics, 7, "damageDealt", damageDealt);
         set(statistics, 8, "damageReceived", damageReceived);
+        JsonArray discord = data.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
+        set(discord, 0, "linkId", discordId);
         DataUtils.writeJSONObject(file, data);
         player.sendMessage(String.format(Messages.SAVED_DATA.getMessage(), System.currentTimeMillis() - start));
     }
