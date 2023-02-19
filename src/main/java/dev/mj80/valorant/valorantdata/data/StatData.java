@@ -106,10 +106,20 @@ public class StatData {
     
         JsonObject statisticsObject = new JsonObject();
         statisticsObject.add("statistics", statisticsArray);
+        
+        JsonObject discordId = new JsonObject();
+        discordId.addProperty("linkId", 0);
+        
+        JsonArray discordArray = new JsonArray();
+        discordArray.add(discordId);
+    
+        JsonObject discordObject = new JsonObject();
+        discordObject.add("discord", discordArray);
     
         JsonArray dataArray = new JsonArray();
         dataArray.add(profileObject);
         dataArray.add(statisticsObject);
+        dataArray.add(discordObject);
     
         JsonObject dataObject = new JsonObject();
         dataObject.add("data", dataArray);
