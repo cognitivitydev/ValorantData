@@ -20,7 +20,7 @@ public class StatData {
     private Player player;
     private File file;
     
-    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses;
+    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
     private double damageDealt,damageReceived;
     
     public StatData(Player player) {
@@ -108,7 +108,7 @@ public class StatData {
         statisticsObject.add("statistics", statisticsArray);
         
         JsonObject discordId = new JsonObject();
-        discordId.addProperty("linkId", 0);
+        discordId.addProperty("linkId", this.discordId);
         
         JsonArray discordArray = new JsonArray();
         discordArray.add(discordId);
