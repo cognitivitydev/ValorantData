@@ -155,6 +155,8 @@ public class StatData {
                 .getAsJsonArray("profile").get(2).getAsJsonObject()
                 .getAsJsonArray("nameHistory");
         if(!nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
+        JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
+        discordId = discord.get(0).getAsJsonObject().get("linkId").getAsLong();
         DataUtils.writeJSONObject(file, dataFile);
     }
     

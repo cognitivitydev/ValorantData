@@ -22,9 +22,13 @@ public final class ValorantData extends JavaPlugin {
     }
     
     public StatData createData(Player player) {
-        StatData data = new StatData(player);
-        dataList.add(data);
-        return data;
+        if(getData(player) == null) {
+            StatData data = new StatData(player);
+            dataList.add(data);
+            return data;
+        } else {
+            return getData(player);
+        }
     }
     
     public void deleteData(Player player) {
