@@ -7,7 +7,7 @@ public enum Messages {
     SAVING_DATA("&7Saving data..."),
     ADMIN_SAVING_DATA("&bSaving data for %s players..."),
     SAVED_DATA("&7Data saved in %s ms."),
-    ADMIN_SAVED_DATA("&bSaved data for %s players in %s ms. &7(%s ms/player)"),
+    ADMIN_SAVED_DATA("&bSaved data for %s players in %s ms. &7(avg %s)"),
     
     ERROR_CREATING_FILE("""
                 &r

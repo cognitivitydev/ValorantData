@@ -21,7 +21,7 @@ public class StatData {
     private File file;
     
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
-    private double damageDealt,damageReceived;
+    private double damageDealt,damageReceived,particles;
     
     public StatData(Player player) {
         this.player = player;
@@ -39,7 +39,7 @@ public class StatData {
     
     public JsonObject createData() {
         JsonObject particles = new JsonObject();
-        particles.addProperty("particles", 1.0F);
+        particles.addProperty("particles", this.particles);
     
         JsonArray preferencesArray = new JsonArray();
         preferencesArray.add(particles);
@@ -130,9 +130,14 @@ public class StatData {
     public void saveData() {
         long start = System.currentTimeMillis();
         player.sendMessage(Messages.SAVING_DATA.getMessage());
-        JsonObject data = DataUtils.parseJSON(file);
-        assert data != null;
-        JsonArray statistics = data.getAsJsonArray("data").get(1).getAsJsonObject().getAsJsonArray("statistics");
+        JsonObject dataFile = DataUtils.parseJSON(file);
+        assert dataFile != null;
+        JsonArray data = dataFile.getAsJsonArray("data");
+        JsonArray profile = data.get(0).getAsJsonObject().getAsJsonArray("profile");
+        JsonArray preferences = profile.get(0).getAsJsonObject().getAsJsonArray("preferences");
+        set(preferences, 0, "particles", particles);
+        //
+        JsonArray statistics = data.get(1).getAsJsonObject().getAsJsonArray("statistics");
         set(statistics, 0, "kills", kills);
         set(statistics, 1, "deaths", deaths);
         set(statistics, 2, "assists", assists);
@@ -142,20 +147,33 @@ public class StatData {
         set(statistics, 6, "loses", loses);
         set(statistics, 7, "damageDealt", damageDealt);
         set(statistics, 8, "damageReceived", damageReceived);
-        JsonArray discord = data.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
+        JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
         set(discord, 0, "linkId", discordId);
-        DataUtils.writeJSONObject(file, data);
+        DataUtils.writeJSONObject(file, dataFile);
         player.sendMessage(String.format(Messages.SAVED_DATA.getMessage(), System.currentTimeMillis() - start));
     }
     
     public void updateData() {
         JsonObject dataFile = DataUtils.parseJSON(file);
         assert dataFile != null;
-        JsonArray nameHistory = dataFile.getAsJsonArray("data").get(0).getAsJsonObject()
-                .getAsJsonArray("profile").get(2).getAsJsonObject()
-                .getAsJsonArray("nameHistory");
+        JsonArray data = dataFile.getAsJsonArray("data");
+        JsonArray profile = data.get(0).getAsJsonObject().getAsJsonArray("profile");
+        JsonArray preferences = profile.get(0).getAsJsonObject().getAsJsonArray("preferences");
+        particles = preferences.get(0).getAsJsonObject().get("particles").getAsDouble();
+        //
+        JsonArray statistics = data.get(1).getAsJsonObject().getAsJsonArray("statistics");
+        kills = statistics.get(0).getAsJsonObject().get("kills").getAsLong();
+        deaths = statistics.get(1).getAsJsonObject().get("deaths").getAsLong();
+        assists = statistics.get(2).getAsJsonObject().get("assists").getAsLong();
+        roundsPlayed = statistics.get(3).getAsJsonObject().get("roundsPlayed").getAsLong();
+        matchesPlayed = statistics.get(4).getAsJsonObject().get("matchesPlayed").getAsLong();
+        victories = statistics.get(5).getAsJsonObject().get("victories").getAsLong();
+        loses = statistics.get(6).getAsJsonObject().get("loses").getAsLong();
+        damageDealt = statistics.get(7).getAsJsonObject().get("damageDealt").getAsDouble();
+        damageReceived = statistics.get(8).getAsJsonObject().get("damageReceived").getAsDouble();
+        JsonArray nameHistory = profile.get(2).getAsJsonObject().getAsJsonArray("nameHistory");
         if(!nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
-        JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
+        JsonArray discord = data.get(2).getAsJsonObject().getAsJsonArray("discord");
         discordId = discord.get(0).getAsJsonObject().get("linkId").getAsLong();
         DataUtils.writeJSONObject(file, dataFile);
     }
