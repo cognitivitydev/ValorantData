@@ -50,14 +50,14 @@ public final class ValorantData extends JavaPlugin {
         Collection<? extends Player> players = getServer().getOnlinePlayers();
         Collection<? extends Player> staff = players.stream().filter(player -> player.hasPermission("valorant.staff")).toList();
         players.forEach(player -> {
-            player.sendMessage(String.format(Messages.ADMIN_SAVING_DATA.getMessage(), players.size()));
+            player.sendMessage(Messages.ADMIN_SAVING_DATA.getMessage(players.size()));
         });
         long start = System.nanoTime();
         players.forEach(this::saveData);
         long end = System.nanoTime();
         double ms = DataUtils.round((float) (end - start)/1000000, 2);
         staff.forEach(player -> {
-            player.sendMessage(String.format(Messages.ADMIN_SAVED_DATA.getMessage(), players.size(), ms, DataUtils.round(ms/players.size(), 2)));
+            player.sendMessage(Messages.ADMIN_SAVED_DATA.getMessage(players.size(), ms, DataUtils.round(ms/players.size(), 2)));
         });
     }
 }

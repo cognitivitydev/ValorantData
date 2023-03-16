@@ -14,7 +14,7 @@ import java.util.Scanner;
 public class DataUtils {
     public static JsonObject parseJSON(File file) {
         try {
-            return (JsonObject) new JsonParser().parse(new FileReader(file.getCanonicalPath()));
+            return (JsonObject) JsonParser.parseReader(new FileReader(file.getCanonicalPath()));
         } catch(Exception exception){
             exception.printStackTrace();
             return null;

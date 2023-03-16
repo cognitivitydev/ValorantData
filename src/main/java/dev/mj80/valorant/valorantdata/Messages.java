@@ -28,6 +28,11 @@ public enum Messages {
     public @NotNull String getMessage() {
         return formatMessage(message);
     }
+    
+    public @NotNull String getMessage(Object... args) {
+        return formatMessage(String.format(message, args));
+    }
+    
     private static String formatMessage(String message) {
         message = message.replace("<RED>", "&#fd303a")
                 .replace("<ORANGE>", "&#fcba03").replace("<YELLOW>", "&#fbfe3b")

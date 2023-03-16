@@ -22,6 +22,8 @@ public class StatData {
     
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
     private double damageDealt,damageReceived,particles;
+    private final AnticheatData anticheatData;
+    private final CoreData coreData;
     
     public StatData(Player player) {
         this.player = player;
@@ -31,9 +33,12 @@ public class StatData {
             if (file.createNewFile() || DataUtils.readFile(file).equals("-")) {
                 DataUtils.writeJSONObject(file, createData());
             }
-        } catch(IOException e) {
-            player.sendMessage(String.format(Messages.ERROR_CREATING_FILE.getMessage(), player.getName(), player.getUniqueId(), System.currentTimeMillis()));
-            e.printStackTrace();
+        } catch(IOException exception) {
+            player.sendMessage(Messages.ERROR_CREATING_FILE.getMessage(player.getName(), player.getUniqueId(), System.currentTimeMillis()));
+            exception.printStackTrace();
+        } finally {
+            anticheatData = new AnticheatData(player, this);
+            coreData = new CoreData(player, this);
         }
     }
     
@@ -150,7 +155,7 @@ public class StatData {
         JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
         set(discord, 0, "linkId", discordId);
         DataUtils.writeJSONObject(file, dataFile);
-        player.sendMessage(String.format(Messages.SAVED_DATA.getMessage(), System.currentTimeMillis() - start));
+        player.sendMessage(Messages.SAVED_DATA.getMessage(System.currentTimeMillis() - start));
     }
     
     public void updateData() {
