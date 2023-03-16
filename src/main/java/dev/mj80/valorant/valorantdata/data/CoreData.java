@@ -1,11 +1,14 @@
 package dev.mj80.valorant.valorantdata.data;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
 import java.util.ArrayList;
 
+@Getter @Setter
 public class CoreData {
     private final Player player;
     private final StatData stats;
