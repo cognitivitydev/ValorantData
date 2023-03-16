@@ -1,6 +1,8 @@
 package dev.mj80.valorant.valorantdata;
 
 import dev.mj80.valorant.valorantdata.data.StatData;
+import dev.mj80.valorant.valorantdata.listeners.JoinListener;
+import dev.mj80.valorant.valorantdata.listeners.QuitListener;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,16 +21,30 @@ public final class ValorantData extends JavaPlugin {
     public void onEnable() {
         instance = this;
         dataPath = ValorantData.getInstance().getDataFolder();
+        getServer().getPluginManager().registerEvents(new JoinListener(), this);
+        getServer().getPluginManager().registerEvents(new QuitListener(), this);
+        
+        getServer().getOnlinePlayers().forEach(this::createData);
+    
+        getServer().getScheduler().runTaskTimer(this, this::saveAll, 6000L, 6000L);
+    }
+    
+    @Override
+    public void onDisable() {
+        getServer().getOnlinePlayers().forEach(this::deleteData);
     }
     
     public StatData createData(Player player) {
+        long start = System.currentTimeMillis();
+        player.sendMessage(Messages.LOADING_DATA.getMessage());
         if(getData(player) == null) {
             StatData data = new StatData(player);
             dataList.add(data);
+            player.sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
             return data;
-        } else {
-            return getData(player);
         }
+        player.sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
+        return getData(player);
     }
     
     public void deleteData(Player player) {
@@ -39,7 +55,11 @@ public final class ValorantData extends JavaPlugin {
     }
     
     public StatData getData(Player player) {
-        return dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).findFirst().orElse(null);
+        StatData data = dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).findFirst().orElse(null);
+        if(data == null) {
+            return createData(player);
+        }
+        return data;
     }
     
     public void saveData(Player player) {
@@ -49,7 +69,7 @@ public final class ValorantData extends JavaPlugin {
     public void saveAll() {
         Collection<? extends Player> players = getServer().getOnlinePlayers();
         Collection<? extends Player> staff = players.stream().filter(player -> player.hasPermission("valorant.staff")).toList();
-        players.forEach(player -> {
+        staff.forEach(player -> {
             player.sendMessage(Messages.ADMIN_SAVING_DATA.getMessage(players.size()));
         });
         long start = System.nanoTime();
