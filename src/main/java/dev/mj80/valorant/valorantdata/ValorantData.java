@@ -8,14 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class ValorantData extends JavaPlugin {
     @Getter private static ValorantData instance;
     @Getter private static File dataPath;
-    @Getter private final Set<StatData> dataList = new HashSet<>();
+    @Getter private final ArrayList<StatData> dataList = new ArrayList<>();
     
     @Override
     public void onEnable() {
@@ -37,7 +36,7 @@ public final class ValorantData extends JavaPlugin {
     public StatData createData(Player player) {
         long start = System.currentTimeMillis();
         player.sendMessage(Messages.LOADING_DATA.getMessage());
-        if(getData(player) == null) {
+        if(dataList.stream().noneMatch(data -> data.getPlayer() == player)) {
             StatData data = new StatData(player);
             dataList.add(data);
             player.sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
@@ -48,7 +47,11 @@ public final class ValorantData extends JavaPlugin {
     }
     
     public void deleteData(Player player) {
-        dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).forEach(stats -> {
+        // clone data list
+        // forEach throws an exception when the data list changes mid-loop
+        new ArrayList<>(dataList).stream()
+                .filter(data -> data != null && data.getPlayer() != null && data.getPlayer() == player)
+                .forEach(stats -> {
             stats.saveData();
             dataList.remove(stats);
         });

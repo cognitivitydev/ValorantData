@@ -15,6 +15,7 @@ public class AnticheatData {
     public AnticheatData(Player player, StatData stats) {
         this.player = player;
         this.stats = stats;
+        reset();
     }
     
     public boolean serverGround,nearGround,clientGround,lServerGround,lNearGround,lClientGround,inLiquid,onLiquid,inPowderedSnow,onIce,underBlock,onStairs,onSlab,onSlime,onClimbable,
@@ -57,5 +58,47 @@ public class AnticheatData {
     
     public long getTime(long ms) {
         return System.currentTimeMillis() - ms;
+    }
+    
+    public void reset() {
+        lastSpeed = 0;
+        lastJump = 0;
+        lastFlightOff = 0;
+        lastFlightOn = 0;
+        lastSprintOff = 0;
+        lastSprintOn = 0;
+        lastServerGround = 0;
+        lastClientGround = 0;
+        lastKnockback = 0;
+        lastTeleport = 0;
+        lastDamage = 0;
+        lastAttack = 0;
+        lastGhostBlock = 0;
+        lastOnSlime = 0;
+        lastElytraBoost = 0;
+        lastSafeLocation = player.getLocation();
+        lastLocation = player.getLocation();
+        lastLastEyeLocation = player.getEyeLocation();
+        lastEyeLocation = player.getEyeLocation();
+        currentLocation = player.getLocation();
+        currentEyeLocation = player.getEyeLocation();
+        accelerationBufferB = 0;
+        jesusBufferB = 0;
+        nofallBuffer = 0;
+        packetsBuffer = 0;
+        speedBufferA = 0;
+        buffer = 0;
+        verbose = 0;
+        alerts = 0;
+        deltaX = 0;
+        deltaZ = 0;
+        deltaXZ = 0;
+        deltaY = 0;
+        lastDeltaXZ = 0;
+        deltaYaw = 0;
+        deltaPitch = 0;
+        alertsEnabled = player.hasPermission("anticheat.alerts");
+        verboseEnabled = false;
+        isPunished = false;
     }
 }

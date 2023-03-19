@@ -4,11 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import dev.mj80.valorant.valorantdata.DataUtils;
-import dev.mj80.valorant.valorantdata.Messages;
 import dev.mj80.valorant.valorantdata.ValorantData;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,16 +15,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Getter @Setter
-public class StatData {
-    private Player player;
+public class OfflineStats {
+    private final OfflinePlayer player;
     private File file;
     
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
     private double damageDealt,damageReceived,particles;
-    private final AnticheatData anticheatData;
-    private final CoreData coreData;
     
-    public StatData(Player player) {
+    public OfflineStats(OfflinePlayer player) {
         this.player = player;
         file = new File(ValorantData.getDataPath() + File.separator + player.getUniqueId() + ".json");
         try {
@@ -34,70 +31,67 @@ public class StatData {
                 DataUtils.writeJSONObject(file, createData());
             }
         } catch(IOException exception) {
-            player.sendMessage(Messages.ERROR_CREATING_FILE.getMessage(player.getName(), player.getUniqueId(), System.currentTimeMillis()));
             exception.printStackTrace();
-        } finally {
-            anticheatData = new AnticheatData(player, this);
-            coreData = new CoreData(player, this);
         }
+        update();
     }
     
     public JsonObject createData() {
         JsonObject particles = new JsonObject();
         particles.addProperty("particles", this.particles);
-    
+        
         JsonArray preferencesArray = new JsonArray();
         preferencesArray.add(particles);
-    
+        
         JsonObject preferencesObject = new JsonObject();
         preferencesObject.add("preferences", preferencesArray);
-    
+        
         JsonObject firstLogin = new JsonObject();
         long firstPlayed = player.getFirstPlayed();
         if(firstPlayed == 0) firstPlayed = System.currentTimeMillis();
         firstLogin.addProperty("firstLogin", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z").format(new Date(firstPlayed)));
-    
+        
         JsonArray nameHistoryArray = new JsonArray();
         nameHistoryArray.add(player.getName());
-    
+        
         JsonObject nameHistory = new JsonObject();
         nameHistory.add("nameHistory", nameHistoryArray);
-    
+        
         JsonArray profileArray = new JsonArray();
         profileArray.add(preferencesObject);
         profileArray.add(firstLogin);
         profileArray.add(nameHistory);
-    
+        
         JsonObject profileObject = new JsonObject();
         profileObject.add("profile", profileArray);
-    
+        
         JsonObject kills = new JsonObject();
         kills.addProperty("kills", this.kills);
-    
+        
         JsonObject deaths = new JsonObject();
         deaths.addProperty("deaths", this.deaths);
-    
+        
         JsonObject assists = new JsonObject();
         assists.addProperty("assists", this.assists);
-    
+        
         JsonObject roundsPlayed = new JsonObject();
         roundsPlayed.addProperty("roundsPlayed", this.roundsPlayed);
-    
+        
         JsonObject matchesPlayed = new JsonObject();
         matchesPlayed.addProperty("matchesPlayed", this.matchesPlayed);
-    
+        
         JsonObject victories = new JsonObject();
         victories.addProperty("victories", this.victories);
-    
+        
         JsonObject loses = new JsonObject();
         loses.addProperty("loses", this.loses);
-    
+        
         JsonObject damageDealt = new JsonObject();
         damageDealt.addProperty("damageDealt", this.damageDealt);
-    
+        
         JsonObject damageReceived = new JsonObject();
         damageReceived.addProperty("damageReceived", this.damageReceived);
-    
+        
         JsonArray statisticsArray = new JsonArray();
         statisticsArray.add(kills);
         statisticsArray.add(deaths);
@@ -108,7 +102,7 @@ public class StatData {
         statisticsArray.add(loses);
         statisticsArray.add(damageDealt);
         statisticsArray.add(damageReceived);
-    
+        
         JsonObject statisticsObject = new JsonObject();
         statisticsObject.add("statistics", statisticsArray);
         
@@ -117,24 +111,23 @@ public class StatData {
         
         JsonArray discordArray = new JsonArray();
         discordArray.add(discordId);
-    
+        
         JsonObject discordObject = new JsonObject();
         discordObject.add("discord", discordArray);
-    
+        
         JsonArray dataArray = new JsonArray();
         dataArray.add(profileObject);
         dataArray.add(statisticsObject);
         dataArray.add(discordObject);
-    
+        
         JsonObject dataObject = new JsonObject();
         dataObject.add("data", dataArray);
         
         return dataObject;
     }
     
-    public void saveData() {
+    public void save() {
         long start = System.currentTimeMillis();
-        player.sendMessage(Messages.SAVING_DATA.getMessage());
         JsonObject dataFile = DataUtils.parseJSON(file);
         assert dataFile != null;
         JsonArray data = dataFile.getAsJsonArray("data");
@@ -154,10 +147,9 @@ public class StatData {
         JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
         set(discord, 0, "linkId", discordId);
         DataUtils.writeJSONObject(file, dataFile);
-        player.sendMessage(Messages.SAVED_DATA.getMessage(System.currentTimeMillis() - start));
     }
     
-    public void updateData() {
+    public void update() {
         JsonObject dataFile = DataUtils.parseJSON(file);
         assert dataFile != null;
         JsonArray data = dataFile.getAsJsonArray("data");

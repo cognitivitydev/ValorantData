@@ -10,6 +10,7 @@ public class QuitListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        ValorantData.getInstance().deleteData(player);
+        // delete data next tick, prevents errors from core/anticheat from the quit event
+        ValorantData.getInstance().getServer().getScheduler().runTask(ValorantData.getInstance(), () -> ValorantData.getInstance().deleteData(player));
     }
 }
