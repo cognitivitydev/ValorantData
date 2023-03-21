@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import dev.mj80.valorant.valorantdata.data.StatData;
+import dev.mj80.valorant.valorantdata.data.PlayerData;
 
 import java.io.File;
 import java.io.FileReader;
@@ -31,7 +31,7 @@ public class DataUtils {
         }
     }
     
-    public static void updateData(StatData data) {
+    public static void updateData(PlayerData data) {
         JsonObject dataFile = parseJSON(data.getFile());
         assert dataFile != null;
         JsonArray nameHistory = dataFile.getAsJsonArray("data").get(0).getAsJsonObject()

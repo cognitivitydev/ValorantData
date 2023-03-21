@@ -14,9 +14,9 @@ import java.util.ArrayList;
 @Getter @Setter
 public class CoreData {
     private final Player player;
-    private final StatData stats;
+    private final PlayerData stats;
     
-    public CoreData(Player player, StatData stats) {
+    public CoreData(Player player, PlayerData stats) {
         this.player = player;
         this.stats = stats;
         reset();

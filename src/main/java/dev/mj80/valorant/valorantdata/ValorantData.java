@@ -1,20 +1,22 @@
 package dev.mj80.valorant.valorantdata;
 
-import dev.mj80.valorant.valorantdata.data.StatData;
+import dev.mj80.valorant.valorantdata.data.PlayerData;
 import dev.mj80.valorant.valorantdata.listeners.JoinListener;
 import dev.mj80.valorant.valorantdata.listeners.QuitListener;
 import lombok.Getter;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public final class ValorantData extends JavaPlugin {
     @Getter private static ValorantData instance;
     @Getter private static File dataPath;
-    @Getter private final ArrayList<StatData> dataList = new ArrayList<>();
+    @Getter private final ArrayList<PlayerData> dataList = new ArrayList<>();
     
     @Override
     public void onEnable() {
@@ -33,20 +35,20 @@ public final class ValorantData extends JavaPlugin {
         getServer().getOnlinePlayers().forEach(this::deleteData);
     }
     
-    public StatData createData(Player player) {
+    public PlayerData createData(OfflinePlayer player) {
         long start = System.currentTimeMillis();
-        player.sendMessage(Messages.LOADING_DATA.getMessage());
+        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADING_DATA.getMessage());
         if(dataList.stream().noneMatch(data -> data.getPlayer() == player)) {
-            StatData data = new StatData(player);
+            PlayerData data = new PlayerData(player);
             dataList.add(data);
-            player.sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
             return data;
         }
-        player.sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
+        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis()-start));
         return getData(player);
     }
     
-    public void deleteData(Player player) {
+    public void deleteData(OfflinePlayer player) {
         // clone data list
         // forEach throws an exception when the data list changes mid-loop
         new ArrayList<>(dataList).stream()
@@ -57,8 +59,8 @@ public final class ValorantData extends JavaPlugin {
         });
     }
     
-    public StatData getData(Player player) {
-        StatData data = dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).findFirst().orElse(null);
+    public PlayerData getData(OfflinePlayer player) {
+        PlayerData data = dataList.stream().filter(dataPlayer -> dataPlayer.getPlayer() == player).findFirst().orElse(null);
         if(data == null) {
             return createData(player);
         }
@@ -66,7 +68,7 @@ public final class ValorantData extends JavaPlugin {
     }
     
     public void saveData(Player player) {
-        dataList.stream().filter(data -> data.getPlayer() == player).forEach(StatData::saveData);
+        dataList.stream().filter(data -> data.getPlayer() == player).forEach(PlayerData::saveData);
     }
     
     public void saveAll() {
