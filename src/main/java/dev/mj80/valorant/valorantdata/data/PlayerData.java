@@ -5,22 +5,21 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
 @Getter @Setter
 public class PlayerData {
-    private OfflinePlayer player;
+    @NotNull private OfflinePlayer player;
     private File file;
     
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
     private double damageDealt,damageReceived,particles;
-    @Nullable private final AnticheatData anticheatData;
-    @Nullable private final CoreData coreData;
+    private final AnticheatData anticheatData;
+    private final CoreData coreData;
     @NotNull private final StatData stats;
     
-    public PlayerData(OfflinePlayer player) {
+    public PlayerData(@NotNull OfflinePlayer player) {
         this.player = player;
         anticheatData = player.isOnline() ? new AnticheatData(player.getPlayer(), this) : null;
         coreData = player.isOnline() ? new CoreData(player.getPlayer(), this) : null;

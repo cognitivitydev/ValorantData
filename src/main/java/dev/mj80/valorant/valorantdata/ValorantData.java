@@ -52,7 +52,7 @@ public final class ValorantData extends JavaPlugin {
         // clone data list
         // forEach throws an exception when the data list changes mid-loop
         new ArrayList<>(dataList).stream()
-                .filter(data -> data != null && data.getPlayer() != null && data.getPlayer() == player)
+                .filter(data -> data != null && data.getPlayer() == player)
                 .forEach(stats -> {
             stats.saveData();
             dataList.remove(stats);
