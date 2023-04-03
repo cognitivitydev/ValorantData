@@ -32,13 +32,13 @@ public class DataUtils {
     }
     
     public static void updateData(PlayerData data) {
-        JsonObject dataFile = parseJSON(data.getFile());
+        JsonObject dataFile = parseJSON(data.getStats().getFile());
         assert dataFile != null;
         JsonArray nameHistory = dataFile.getAsJsonArray("data").get(0).getAsJsonObject()
                 .getAsJsonArray("profile").get(2).getAsJsonObject()
                 .getAsJsonArray("nameHistory");
         if(!nameHistory.contains(new JsonPrimitive(data.getPlayer().getName()))) nameHistory.add(data.getPlayer().getName());
-        writeJSONObject(data.getFile(), dataFile);
+        writeJSONObject(data.getStats().getFile(), dataFile);
     }
     
     public static String readFile(File file) {

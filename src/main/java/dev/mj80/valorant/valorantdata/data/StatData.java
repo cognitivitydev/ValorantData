@@ -29,6 +29,7 @@ public class StatData {
     public StatData(OfflinePlayer player, @NotNull PlayerData data) {
         this.player = player;
         file = new File(ValorantData.getDataPath() + File.separator + player.getUniqueId() + ".json");
+        updateData();
         try {
             file.getParentFile().mkdirs();
             if (file.createNewFile() || DataUtils.readFile(file).equals("-")) {
@@ -163,7 +164,6 @@ public class StatData {
         JsonArray profile = data.get(0).getAsJsonObject().getAsJsonArray("profile");
         JsonArray preferences = profile.get(0).getAsJsonObject().getAsJsonArray("preferences");
         particles = preferences.get(0).getAsJsonObject().get("particles").getAsDouble();
-        //
         JsonArray statistics = data.get(1).getAsJsonObject().getAsJsonArray("statistics");
         kills = statistics.get(0).getAsJsonObject().get("kills").getAsLong();
         deaths = statistics.get(1).getAsJsonObject().get("deaths").getAsLong();

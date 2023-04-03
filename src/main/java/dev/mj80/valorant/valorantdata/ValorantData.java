@@ -96,7 +96,7 @@ public final class ValorantData extends JavaPlugin {
         new ArrayList<>(dataList).stream()
                 .filter(data -> data != null && data.getPlayer() == player)
                 .forEach(stats -> {
-            stats.saveData();
+                    stats.saveData();
             dataList.remove(stats);
         });
     }

@@ -14,15 +14,15 @@ import java.util.ArrayList;
 @Getter @Setter
 public class CoreData {
     private final Player player;
-    private final PlayerData stats;
+    private final PlayerData data;
     
-    public CoreData(Player player, PlayerData stats) {
+    public CoreData(Player player, PlayerData data) {
         this.player = player;
-        this.stats = stats;
+        this.data = data;
         reset();
     }
     
-    private boolean inGame,inQueue,staff,scoped,planting,onGround,packEnabled;
+    private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled;
     private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
     private int streak;
     private long lastUsedAbility3,lastUsedAbility2,lastUsedAbility1,lastUsedUltimate,lastScopeIn,lastAir,lastJump,lastMovement;
@@ -33,10 +33,6 @@ public class CoreData {
     
     public long getTime(long value) {
         return System.currentTimeMillis()-value;
-    }
-    
-    public long getDiscordId() {
-        return stats.getDiscordId();
     }
     
     public void reset() {

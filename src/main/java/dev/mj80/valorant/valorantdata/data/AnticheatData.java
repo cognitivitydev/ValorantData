@@ -10,11 +10,11 @@ import java.util.ArrayList;
 @Getter @Setter
 public class AnticheatData {
     private final Player player;
-    private final PlayerData stats;
+    private final PlayerData data;
     
-    public AnticheatData(Player player, PlayerData stats) {
+    public AnticheatData(Player player, PlayerData data) {
         this.player = player;
-        this.stats = stats;
+        this.data = data;
         reset();
     }
     
