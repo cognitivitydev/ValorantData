@@ -18,7 +18,7 @@ import java.util.Scanner;
 public class DataUtils {
     public static boolean createFile(File file) {
         try {
-            boolean mkdir = file.mkdirs();
+            boolean mkdir = file.getParentFile().mkdirs();
             boolean created = file.createNewFile();
             return mkdir && created;
         } catch (IOException exception) {

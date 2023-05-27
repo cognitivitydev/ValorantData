@@ -31,10 +31,10 @@ public class StatData {
     public StatData(OfflinePlayer player, @NotNull PlayerData data) {
         this.player = player;
         file = new File(ValorantData.getDataPath() + File.separator + player.getUniqueId() + ".json");
-            if (DataUtils.createFile(file) || DataUtils.readFile(file).equals("-")) {
-                DataUtils.writeJSONObject(file, createData());
-            }
-            updateData();
+        if (DataUtils.createFile(file) || DataUtils.readFile(file).equals("-")) {
+            DataUtils.writeJSONObject(file, createData());
+        }
+        updateData();
         this.data = data;
     }
     

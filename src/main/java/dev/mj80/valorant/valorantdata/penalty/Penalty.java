@@ -74,7 +74,7 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public void penalize() {
+    public void run() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         StatData data = ValorantData.getInstance().getData(player).getStats();
