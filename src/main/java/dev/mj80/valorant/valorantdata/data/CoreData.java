@@ -31,6 +31,7 @@ public class CoreData {
     private BoundingBox box0,box1,box2,box3;
     private Location lastSafeLocation;
     
+    @SuppressWarnings("unused")
     public long getTime(long value) {
         return System.currentTimeMillis()-value;
     }

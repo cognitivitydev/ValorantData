@@ -56,6 +56,7 @@ public class AnticheatData {
     
     public int sprintBufferC;
     
+    @SuppressWarnings("unused")
     public long getTime(long ms) {
         return System.currentTimeMillis() - ms;
     }

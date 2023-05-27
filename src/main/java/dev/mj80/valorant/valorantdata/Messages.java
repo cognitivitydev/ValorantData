@@ -1,25 +1,85 @@
 package dev.mj80.valorant.valorantdata;
 
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
 
 public enum Messages {
-    SAVING_DATA("&7Saving data..."),
-    SAVED_DATA("&7Data saved in %s ms."),
+    SAVING_DATA("<gray>Saving data..."),
+    SAVED_DATA("<gray>Data saved in %s ms."),
     
-    ADMIN_SAVING_DATA("&bSaving data for %s players..."),
-    ADMIN_SAVED_DATA("&bSaved data for %s players in %s ms. &7(avg %s)"),
+    ADMIN_SAVING_DATA("<aqua>Saving data for %s players..."),
+    ADMIN_SAVED_DATA("<aqua>Saved data for %s players in %s ms. <gray>(avg %s)"),
     
-    LOADING_DATA("&7Loading data..."),
-    LOADED_DATA("&7Loaded data in %s ms."),
+    LOADING_DATA("<gray>Loading data..."),
+    LOADED_DATA("<gray>Loaded data in %s ms."),
     
-    ERROR_CREATING_FILE("""
-                &r
-                &cThere was an error while creating or loading your data!
-                &c&lPlease contact an admin.
-                &7INFO:
-                &8%s,%s,%s
-                &r"""),
+    PERMANENT_BAN_REASON("""
+            <red>You have been permanently banned from ValorantFPS.
+            
+            <gray>Reason: <white>%s
+            <gray>Banned on <white>%s<gray>.
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            """),
+    TEMPORARY_BAN_REASON("""
+            <red>You have been temporarily banned from ValorantFPS.
+            
+            <gray>Reason: <white>%s
+            <gray>Banned on <white>%s<gray>.
+            <gray>Expires on <white>%s. <gray>(<white>%s<gray>)
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            """),
+    PERMANENT_MUTE_REASON("""
+            
+            <red>You are permanently muted from ValorantFPS.
+            
+            <gray>Reason: <white>%s
+            <gray>Muted on <white>%s<gray>.
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            """),
+    TEMPORARY_MUTE_REASON("""
+            
+            <red>You are permanently muted from ValorantFPS.
+            
+            <gray>Reason: <white>%s
+            <gray>Muted on <white>%s<gray>.
+            <gray>Expires on <white>%s. <gray>(<white>%s<gray>)
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            """),
+    KICK_REASON("""
+            <red>You have been kicked from ValorantFPS.
+            
+            <gray>Reason: <white>%s
+            <gray>Kicked on <white>%s<gray>.
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>This penalty cannot be appealed.
+            """),
+    WARN_REASON("""
+            
+            <red>You have been warned.
+            
+            <gray>Reason: <white>%s
+            <gray>Warned on <white>%s<gray>.
+            <gray>Penalty ID: <gold>#%s
+            
+            <dark_gray>This penalty cannot be appealed.
+            """),
+    //"""
+    //    <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>: %s.
+    //      This will <gray>%s."""
+    PENALTY_ADMINISTERED("""
+            <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>.
+              <gray>Reason: <white>"%s"
+              <gray>This will %s<gray>."""),
     ;
     
     
@@ -29,37 +89,11 @@ public enum Messages {
         this.message = message;
     }
     
-    public @NotNull String getMessage() {
-        return formatMessage(message);
+    public @NotNull Component getMessage() {
+        return MiniMessage.miniMessage().deserialize(message);
     }
     
-    public @NotNull String getMessage(Object... args) {
-        return formatMessage(String.format(message, args));
-    }
-    
-    private static String formatMessage(String message) {
-        message = message.replace("<RED>", "&#fd303a")
-                .replace("<ORANGE>", "&#fcba03").replace("<YELLOW>", "&#fbfe3b")
-                .replace("<DARKGREEN>", "&#2bba7c").replace("<GREEN>", "&#3afba7")
-                .replace("<BLUE>", "&#31afec").replace("<PURPLE>", "&#a452e3")
-                .replace("<MAGENTA>", "&#ea4adf").replace("<PINK>", "&#f6adc6")
-                .replace("<GRAY>", "&#a4c1c2").replace("<DARKGRAY>", "&#787667");
-        char[] chars = message.toCharArray();
-        StringBuilder builder = new StringBuilder();
-        String colorHex = "";
-        boolean isHex = false;
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '&' && i < chars.length - 1 && chars[i+1] == '#') {
-                colorHex = "";
-                isHex = true;
-            } else if (isHex) {
-                colorHex += chars[i];
-                isHex = colorHex.length() < 7;
-                if (!isHex)
-                    builder.append(ChatColor.of(colorHex));
-            } else
-                builder.append(chars[i]);
-        }
-        return ChatColor.translateAlternateColorCodes('&', builder.toString());
+    public @NotNull Component getMessage(Object... args) {
+        return MiniMessage.miniMessage().deserialize(String.format(message, args));
     }
 }

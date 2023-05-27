@@ -8,6 +8,7 @@ import dev.mj80.valorant.valorantdata.data.StatData;
 import dev.mj80.valorant.valorantdata.listeners.JoinListener;
 import dev.mj80.valorant.valorantdata.listeners.PacketListener;
 import dev.mj80.valorant.valorantdata.listeners.QuitListener;
+import dev.mj80.valorant.valorantdata.penalty.PenaltyManager;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import org.bukkit.OfflinePlayer;
@@ -24,18 +25,20 @@ public final class ValorantData extends JavaPlugin {
     @Getter private static ValorantData instance;
     @Getter private static File dataPath;
     @Getter private final ArrayList<PlayerData> dataList = new ArrayList<>();
+    @Getter private PenaltyManager penaltyManager;
     
     @Override
     public void onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().getSettings().checkForUpdates(true).bStats(true);
+        PacketEvents.getAPI().getSettings().checkForUpdates(false).bStats(true);
         PacketEvents.getAPI().load();
     }
     
     @Override
     public void onEnable() {
         instance = this;
-        dataPath = ValorantData.getInstance().getDataFolder();
+        dataPath = new File(ValorantData.getInstance().getDataFolder().getAbsolutePath() + File.separator + "players");
+        penaltyManager = new PenaltyManager();
         PacketEvents.getAPI().init();
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
@@ -56,6 +59,7 @@ public final class ValorantData extends JavaPlugin {
         return data;
     }
     
+    @SuppressWarnings("unused")
     private void removeData(OfflinePlayer player) {
         removeData(getData(player));
     }
@@ -71,6 +75,7 @@ public final class ValorantData extends JavaPlugin {
      * @return The player's new data.
      * If the player is offline, AnticheatData and CoreData will be null.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public @NotNull PlayerData createData(OfflinePlayer player) {
         long start = System.currentTimeMillis();
         if (player.isOnline())
@@ -132,15 +137,17 @@ public final class ValorantData extends JavaPlugin {
     public void saveAll() {
         Collection<? extends Player> players = getServer().getOnlinePlayers();
         Collection<? extends Player> staff = players.stream().filter(player -> player.hasPermission("valorant.staff")).toList();
-        staff.forEach(player -> {
-            player.sendMessage(Messages.ADMIN_SAVING_DATA.getMessage(players.size()));
-        });
+        staff.forEach(player ->
+                player.sendMessage(Messages.ADMIN_SAVING_DATA.getMessage(players.size())));
         long start = System.nanoTime();
         players.forEach(this::saveData);
         long end = System.nanoTime();
         double ms = DataUtils.round((float) (end - start)/1000000, 2);
-        staff.forEach(player -> {
-            player.sendMessage(Messages.ADMIN_SAVED_DATA.getMessage(players.size(), ms, DataUtils.round(ms/players.size(), 2)));
-        });
+        staff.forEach(player ->
+            player.sendMessage(Messages.ADMIN_SAVED_DATA.getMessage(players.size(), ms, DataUtils.round(ms/players.size(), 2)))
+        );
+    }
+    public void log(String string) {
+        getServer().getConsoleSender().sendMessage(DataUtils.formatMessage('&', string));
     }
 }
