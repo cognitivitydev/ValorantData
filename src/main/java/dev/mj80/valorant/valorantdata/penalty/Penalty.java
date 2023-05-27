@@ -74,12 +74,16 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public void run() {
+    public void addPunishment() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();
+        send();
+    }
+    public void send() {
+        OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         if(player.isOnline() && player.getPlayer() != null) {
             Player onlinePlayer = player.getPlayer();
             switch(penaltyType) {
