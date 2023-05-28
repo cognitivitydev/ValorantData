@@ -74,15 +74,15 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public Component addPenalty() {
+    public void addPenalty() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();
-        return sendPenaltyWarning();
     }
     
+    @SuppressWarnings("unused")
     public Component sendPenaltyWarning() {
         String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
         String until = DataUtils.timeUntil(end);
@@ -142,7 +142,8 @@ public class Penalty {
     @SuppressWarnings("unused")
     public boolean isActive() {
         long time = System.currentTimeMillis();
-        return start <= time && time >= end;
+        if(penaltyType == PenaltyType.PERMANENT_BAN || penaltyType == PenaltyType.PERMANENT_MUTE) return true;
+        return start <= time && time <= end;
     }
     
     private void alert(Component message) {
