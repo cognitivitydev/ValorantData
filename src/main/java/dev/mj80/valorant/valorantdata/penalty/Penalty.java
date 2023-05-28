@@ -74,53 +74,67 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public void addPunishment() {
+    public Component addPenalty() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();
-        send();
+        return sendPenaltyWarning();
     }
-    public void send() {
-        OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
-        if(player.isOnline() && player.getPlayer() != null) {
-            Player onlinePlayer = player.getPlayer();
-            switch(penaltyType) {
-                case PERMANENT_BAN -> {
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently banned", staffName, reason, "<white>never expire"));
-                    String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    onlinePlayer.kick(Messages.PERMANENT_BAN_REASON.getMessage(reason, banned, pID));
-                }
-                case BAN -> {
-                    String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
-                    String until = DataUtils.timeUntil(end);
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily banned", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
-                    onlinePlayer.kick(Messages.TEMPORARY_BAN_REASON.getMessage(reason, banned, ends, until, pID));
-                }
-                case PERMANENT_MUTE -> {
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently muted", staffName, reason, "<white>never <gray>expire"));
-                    String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    onlinePlayer.sendMessage(Messages.PERMANENT_MUTE_REASON.getMessage(reason, muted, pID));
-                }
-                case MUTE -> {
-                    String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
-                    String until = DataUtils.timeUntil(end);
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily muted", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
-                    onlinePlayer.sendMessage(Messages.TEMPORARY_MUTE_REASON.getMessage(reason, muted, ends, until, pID));
-                }
-                case KICK -> {
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "kicked", staffName, reason, "<white>never <gray>expire"));
-                    String kicked = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    onlinePlayer.kick(Messages.KICK_REASON.getMessage(reason, kicked, pID));
-                }
-                case WARN -> {
-                    alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "warned", staffName, reason, "<white>never <gray>expire"));
-                    String warned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                    onlinePlayer.sendMessage(Messages.WARN_REASON.getMessage(reason, warned, pID));
-                }
+    
+    public Component sendPenaltyWarning() {
+        String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
+        String until = DataUtils.timeUntil(end);
+        switch(penaltyType) {
+            case PERMANENT_BAN ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently banned", staffName, reason, "<white>never expire"));
+            case BAN ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily banned", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
+            case PERMANENT_MUTE ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently muted", staffName, reason, "<white>never <gray>expire"));
+            case MUTE ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily muted", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
+            case KICK ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "kicked", staffName, reason, "<white>never <gray>expire"));
+            case WARN ->
+                alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "warned", staffName, reason, "<white>never <gray>expire"));
+        }
+        return getPenaltyMessage();
+    }
+    
+    public Component getPenaltyMessage() {
+        switch(penaltyType) {
+            case PERMANENT_BAN -> {
+                String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                return Messages.PERMANENT_BAN_REASON.getMessage(reason, banned, pID);
+            }
+            case BAN -> {
+                String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
+                String until = DataUtils.timeUntil(end);
+                return Messages.TEMPORARY_BAN_REASON.getMessage(reason, banned, ends, until, pID);
+            }
+            case PERMANENT_MUTE -> {
+                String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                return Messages.PERMANENT_MUTE_REASON.getMessage(reason, muted, pID);
+            }
+            case MUTE -> {
+                String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
+                String until = DataUtils.timeUntil(end);
+                return Messages.TEMPORARY_MUTE_REASON.getMessage(reason, muted, ends, until, pID);
+            }
+            case KICK -> {
+                String kicked = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                return Messages.KICK_REASON.getMessage(reason, kicked, pID);
+            }
+            case WARN -> {
+                String warned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
+                return Messages.WARN_REASON.getMessage(reason, warned, pID);
+            }
+            default -> {
+                return Component.text().asComponent();
             }
         }
     }
