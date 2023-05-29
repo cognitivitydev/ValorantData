@@ -15,6 +15,18 @@ public enum PenaltyType {
         this.id = id;
     }
     
+    public boolean isPermanent() {
+        return this == PERMANENT_BAN || this == PERMANENT_MUTE;
+    }
+    
+    public boolean isTemporary() {
+        return this == BAN || this == MUTE;
+    }
+    
+    public boolean isInstant() {
+        return this == KICK || this == WARN;
+    }
+    
     public static PenaltyType fromPID(int pID) {
         return Arrays.stream(values()).filter(type -> type.getId() == Integer.parseInt(Integer.toString(Math.abs(pID)).substring(0, 1))).findFirst().orElse(NONE);
     }

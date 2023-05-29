@@ -142,7 +142,7 @@ public class Penalty {
     @SuppressWarnings("unused")
     public boolean isActive() {
         long time = System.currentTimeMillis();
-        if(penaltyType == PenaltyType.PERMANENT_BAN || penaltyType == PenaltyType.PERMANENT_MUTE) return true;
+        if(penaltyType.isPermanent()) return true;
         return start <= time && time <= end;
     }
     

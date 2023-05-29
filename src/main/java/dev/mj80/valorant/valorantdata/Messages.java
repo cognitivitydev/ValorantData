@@ -45,7 +45,7 @@ public enum Messages {
             """),
     TEMPORARY_MUTE_REASON("""
             
-            <red>You are permanently muted from ValorantFPS.
+            <red>You are temporarily muted from ValorantFPS.
             
             <gray>Reason: <white>%s
             <gray>Muted on <white>%s<gray>.
