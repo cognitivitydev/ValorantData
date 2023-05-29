@@ -89,11 +89,11 @@ public class Penalty {
         switch(penaltyType) {
             case PERMANENT_BAN ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently banned", staffName, reason, "<white>never expire"));
-            case BAN ->
+            case TEMPORARY_BAN ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily banned", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
             case PERMANENT_MUTE ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "permanently muted", staffName, reason, "<white>never <gray>expire"));
-            case MUTE ->
+            case TEMPORARY_MUTE ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "temporarily muted", staffName, reason, "expire in <white>"+until+" ("+ends+")"));
             case KICK ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "kicked", staffName, reason, "<white>never <gray>expire"));
@@ -109,7 +109,7 @@ public class Penalty {
                 String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 return Messages.PERMANENT_BAN_REASON.getMessage(reason, banned, pID);
             }
-            case BAN -> {
+            case TEMPORARY_BAN -> {
                 String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
                 String until = DataUtils.timeUntil(end);
@@ -119,7 +119,7 @@ public class Penalty {
                 String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 return Messages.PERMANENT_MUTE_REASON.getMessage(reason, muted, pID);
             }
-            case MUTE -> {
+            case TEMPORARY_MUTE -> {
                 String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
                 String until = DataUtils.timeUntil(end);
