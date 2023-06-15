@@ -11,16 +11,25 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 public class Penalty {
+    private final UUID playerUUID;
+    private final UUID staffUUID;
+    
     private final String playerName;
     private final String staffName;
+    
+    private final @Nullable OfflinePlayer player;
+    private final @Nullable OfflinePlayer staff;
+    
     private final String reason;
     private final PenaltyType penaltyType;
     private final long start;
@@ -28,9 +37,14 @@ public class Penalty {
     private final long end;
     private final int pID;
     
-    public Penalty(String playerName, String staffName, String reason, long start, long duration, int pID) {
-        this.playerName = playerName;
-        this.staffName = staffName;
+    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID) {
+        this.playerUUID = playerUUID;
+        this.staffUUID = staffUUID;
+        
+        player = ValorantData.getInstance().getServer().getPlayer(playerUUID);
+        staff = ValorantData.getInstance().getServer().getPlayer(staffUUID);
+        playerName = player == null ? "UNKNOWN" : player.getName();
+        staffName = staff == null ? "UNKNOWN" : staff.getName();
         this.reason = reason;
         this.start = start;
         this.duration = duration;
@@ -40,19 +54,19 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public static Penalty generate(String playerName, String staffName, PenaltyType penaltyType, String reason, long start, long duration) {
-        return new Penalty(playerName, staffName, reason, start, duration, Integer.parseInt(penaltyType.getId() +
+    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration) {
+        return new Penalty(playerUUID, staffUUID, reason, start, duration, Integer.parseInt(penaltyType.getId() +
                 String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)));
     }
     
     public static Penalty of(JsonObject jsonObject) {
-        String playerName = jsonObject.get("target").getAsString();
-        String staffName = jsonObject.get("staff").getAsString();
+        String playerUUID = jsonObject.get("target").getAsString();
+        String staffUUID = jsonObject.get("staff").getAsString();
         String reason = jsonObject.get("reason").getAsString();
         long start = jsonObject.get("start").getAsLong();
         long duration = jsonObject.get("duration").getAsLong();
         int pID = jsonObject.get("id").getAsInt();
-        return new Penalty(playerName, staffName, reason, start, duration, pID);
+        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID);
     }
     public static Penalty of(int id) {
         JsonObject jsonObject = ValorantData.getInstance().getPenaltyManager().getJsonArray().asList()
@@ -65,8 +79,8 @@ public class Penalty {
     public JsonObject getAsJson() {
         JsonObject object = new JsonObject();
         object.addProperty("id", pID);
-        object.addProperty("target", playerName);
-        object.addProperty("staff", staffName);
+        object.addProperty("target", String.valueOf(playerUUID));
+        object.addProperty("staff", String.valueOf(staffUUID));
         object.addProperty("reason", reason);
         object.addProperty("start", start);
         object.addProperty("duration", duration);
@@ -76,7 +90,6 @@ public class Penalty {
     @SuppressWarnings("unused")
     public void addPenalty() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
-        OfflinePlayer player = ValorantData.getInstance().getServer().getOfflinePlayer(playerName);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();

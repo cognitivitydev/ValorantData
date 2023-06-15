@@ -118,8 +118,8 @@ public class DataUtils {
         if(time <= 0) {
             return "0 ms";
         }
-        long months = (long) Math.floor((double) time / 2592000000L);
-        time %= 2592000000L;
+        long years = (long) Math.floor((double) time / 31536000000L);
+        time %= 31536000000L;
         long days = (long) Math.floor((double) time / 86400000);
         time %= 86400000;
         long hours = (long) Math.floor((double) time / 3600000);
@@ -129,8 +129,8 @@ public class DataUtils {
         long seconds = (long) Math.floor((double) time / 1000);
         long milliseconds = time % 1000;
         StringBuilder stringBuilder = new StringBuilder();
-        if(months != 0) {
-            stringBuilder.append(months).append("mo ");
+        if(years != 0) {
+            stringBuilder.append(years).append("y ");
         }
         if(days != 0) {
             stringBuilder.append(days).append("d ");
@@ -144,9 +144,9 @@ public class DataUtils {
         if(seconds != 0) {
             stringBuilder.append(seconds).append("s ");
         }
-        if(milliseconds != 0) {
+        if(years == 0 && days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
             stringBuilder.append(milliseconds).append("ms");
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().trim();
     }
 }
