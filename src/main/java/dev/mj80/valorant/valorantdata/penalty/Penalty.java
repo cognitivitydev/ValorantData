@@ -1,5 +1,6 @@
 package dev.mj80.valorant.valorantdata.penalty;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.mj80.valorant.valorantdata.DataUtils;
@@ -13,6 +14,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -36,8 +38,9 @@ public class Penalty {
     private final long duration;
     private final long end;
     private final int pID;
+    private boolean active;
     
-    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID) {
+    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID, boolean active) {
         this.playerUUID = playerUUID;
         this.staffUUID = staffUUID;
         
@@ -51,12 +54,13 @@ public class Penalty {
         this.end = start + duration;
         this.pID = pID;
         this.penaltyType = PenaltyType.fromPID(pID);
+        this.active = active;
     }
     
     @SuppressWarnings("unused")
     public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration) {
         return new Penalty(playerUUID, staffUUID, reason, start, duration, Integer.parseInt(penaltyType.getId() +
-                String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)));
+                String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)), false);
     }
     
     public static Penalty of(JsonObject jsonObject) {
@@ -66,7 +70,8 @@ public class Penalty {
         long start = jsonObject.get("start").getAsLong();
         long duration = jsonObject.get("duration").getAsLong();
         int pID = jsonObject.get("id").getAsInt();
-        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID);
+        boolean active = jsonObject.get("active").getAsBoolean();
+        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active);
     }
     public static Penalty of(int id) {
         JsonObject jsonObject = ValorantData.getInstance().getPenaltyManager().getJsonArray().asList()
@@ -84,6 +89,7 @@ public class Penalty {
         object.addProperty("reason", reason);
         object.addProperty("start", start);
         object.addProperty("duration", duration);
+        object.addProperty("active", active);
         return object;
     }
     
@@ -93,6 +99,7 @@ public class Penalty {
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();
+        setActive(true);
     }
     
     @SuppressWarnings("unused")
@@ -101,19 +108,20 @@ public class Penalty {
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().remove(this);
         data.saveData();
+        setActive(false);
+        String length = DataUtils.timeLength(this.duration);
         String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
         String until = DataUtils.timeUntil(end);
-        switch(penaltyType) {
-            case PERMANENT_BAN ->
-                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unbanned", staff, staffName, reason, "Permanent"));
-            case TEMPORARY_BAN ->
-                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unbanned", staff, staffName, reason, until+" ("+ends+")"));
-            case PERMANENT_MUTE ->
-                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unmuted", staff, staffName, reason, "Permanent"));
-            case TEMPORARY_MUTE ->
-                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unmuted", staff, staffName, reason, until+" ("+ends+")"));
-            case WARN ->
-                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "unwarned", staff, staffName, reason, "Permanent"));
+        if (staff != null) {
+            switch (penaltyType) {
+                case PERMANENT_BAN -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unbanned", staff, staffName, reason, "Permanent"));
+                case TEMPORARY_BAN ->
+                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unbanned", staff, staffName, reason, length + " (" + until + " // " + ends + ")"));
+                case PERMANENT_MUTE -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unmuted", staff, staffName, reason, "Permanent"));
+                case TEMPORARY_MUTE ->
+                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unmuted", staff, staffName, reason, length + " (" + until + " // " + ends + ")"));
+                case WARN -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "unwarned", staff, staffName, reason, "Permanent"));
+            }
         }
     }
     
@@ -178,7 +186,7 @@ public class Penalty {
     public boolean isActive() {
         long time = System.currentTimeMillis();
         if(penaltyType.isPermanent()) return true;
-        return start <= time && time <= end;
+        return active && start <= time && time <= end;
     }
     
     public void alert(Component message) {
@@ -188,5 +196,24 @@ public class Penalty {
                 staff.sendMessage(message));
         List<String> lines = List.of(MiniMessage.miniMessage().serialize(message).split("\n"));
         lines.forEach(line -> ValorantData.getInstance().getServer().getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(line)));
+    }
+    
+    private void setActive(boolean active) {
+        this.active = active;
+        File penaltyFile = ValorantData.getInstance().getPenaltyManager().getPenaltyFile();
+        JsonObject penaltiesObject = DataUtils.parseJSON(penaltyFile);
+        if(penaltiesObject != null) {
+            JsonArray penaltiesArray = penaltiesObject.get("penalties").getAsJsonArray();
+            for(JsonElement penaltyElement : penaltiesArray.asList()) {
+                JsonObject penalty = penaltyElement.getAsJsonObject();
+                if(penalty.get("id").getAsInt() == pID) {
+                    int index = penaltiesArray.asList().indexOf(penalty);
+                    penalty.addProperty("active", active);
+                    penaltiesArray.set(index, penalty);
+                    penaltiesObject.add("penalties", penaltiesArray);
+                    DataUtils.writeJSONObject(penaltyFile, penaltiesObject);
+                }
+            }
+        }
     }
 }
