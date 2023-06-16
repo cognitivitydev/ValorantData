@@ -42,6 +42,9 @@ public class PenaltyManager {
         penaltiesObject.add("penalties", penaltiesArray);
         DataUtils.writeJSONObject(penaltyFile, penaltiesObject);
     }
+    public void removePenalty(Penalty penalty) {
+        penalties.remove(penalty);
+    }
     public JsonObject getJsonObject() {
         return DataUtils.parseJSON(penaltyFile);
     }

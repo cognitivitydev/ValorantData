@@ -44,7 +44,7 @@ public class Penalty {
         player = ValorantData.getInstance().getServer().getPlayer(playerUUID);
         staff = ValorantData.getInstance().getServer().getPlayer(staffUUID);
         playerName = player == null ? "UNKNOWN" : player.getName();
-        staffName = staff == null ? "UNKNOWN" : staff.getName();
+        staffName = staff == null ? staffUUID == UUID.fromString("00000000-0000-0000-0000-000000000000") ? "CONSOLE" : "UNKNOWN" : staff.getName();
         this.reason = reason;
         this.start = start;
         this.duration = duration;
@@ -88,11 +88,33 @@ public class Penalty {
     }
     
     @SuppressWarnings("unused")
-    public void addPenalty() {
+    public void add() {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
         data.saveData();
+    }
+    
+    @SuppressWarnings("unused")
+    public void remove(@Nullable String staff) {
+        ValorantData.getInstance().getPenaltyManager().removePenalty(this);
+        StatData data = ValorantData.getInstance().getData(player).getStats();
+        data.getPenalties().remove(this);
+        data.saveData();
+        String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
+        String until = DataUtils.timeUntil(end);
+        switch(penaltyType) {
+            case PERMANENT_BAN ->
+                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unbanned", staff, staffName, reason, "Permanent"));
+            case TEMPORARY_BAN ->
+                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unbanned", staff, staffName, reason, until+" ("+ends+")"));
+            case PERMANENT_MUTE ->
+                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unmuted", staff, staffName, reason, "Permanent"));
+            case TEMPORARY_MUTE ->
+                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unmuted", staff, staffName, reason, until+" ("+ends+")"));
+            case WARN ->
+                    alert(Messages.PENALTY_REMOVED.getMessage(playerName, "unwarned", staff, staffName, reason, "Permanent"));
+        }
     }
     
     @SuppressWarnings("unused")
@@ -159,7 +181,7 @@ public class Penalty {
         return start <= time && time <= end;
     }
     
-    private void alert(Component message) {
+    public void alert(Component message) {
         List<Player> onlineStaff = ValorantData.getInstance().getServer().getOnlinePlayers().stream().map(OfflinePlayer::getPlayer)
                 .filter(Objects::nonNull).filter(players -> players.hasPermission("valorant.staff")).toList();
         onlineStaff.forEach(staff ->

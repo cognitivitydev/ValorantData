@@ -73,13 +73,15 @@ public enum Messages {
             
             <dark_gray>This penalty cannot be appealed.
             """),
-    //"""
-    //    <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>: %s.
-    //      This will <gray>%s."""
     PENALTY_ADMINISTERED("""
             <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>.
               <gray>Reason: <white>"%s"
               <gray>This will %s<gray>."""),
+    PENALTY_REMOVED("""
+            <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>.
+              <gray>Originally banned by: <white>%s
+              <gray>Original reason: <white>"%s"
+              <gray>Original penalty length: <white>%s""")
     ;
     
     
