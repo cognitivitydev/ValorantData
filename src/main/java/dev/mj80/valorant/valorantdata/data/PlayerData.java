@@ -12,25 +12,19 @@ import org.jetbrains.annotations.NotNull;
 public class PlayerData {
     @NotNull private OfflinePlayer player;
     
-    private final AnticheatData anticheatData;
-    private final CoreData coreData;
+    private AnticheatData anticheatData;
+    private CoreData coreData;
+    boolean isOnline;
     @NotNull private final StatData stats;
     
     public PlayerData(@NotNull OfflinePlayer player) {
         long startTime = System.currentTimeMillis();
-        ValorantData.getInstance().log("&b[DATA] &7Creating data for player "+player.getName()+":");
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Creating data for player "+player.getName()+":");
         this.player = player;
-        ValorantData.getInstance().log("&b[DATA] &7Creating Anticheat data for player "+player.getName()+"...");
-        anticheatData = player.isOnline() ? new AnticheatData(player.getPlayer(), this) : null;
-        if(anticheatData == null)
-            ValorantData.getInstance().log("&b[DATA] &cAn error occurred or the player is offline while creating Anticheat data for "+player.getName()+"...");
-        ValorantData.getInstance().log("&b[DATA] &7Creating Core data for player "+player.getName()+"...");
-        coreData = player.isOnline() ? new CoreData(player.getPlayer(), this) : null;
-        if(anticheatData == null)
-            ValorantData.getInstance().log("&b[DATA] &cAn error occurred or the player is offline while creating Core data for "+player.getName()+"...");
-        ValorantData.getInstance().log("&b[DATA] &7Creating JSON data for player "+player.getName()+"...");
+        createOnlineData();
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Creating JSON data for player "+player.getName()+"...");
         stats = new StatData(player, this);
-        ValorantData.getInstance().log("&b[DATA] &7Finished creating data for player "+player.getName()+". Took "+(System.currentTimeMillis() - startTime));
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+(System.currentTimeMillis() - startTime)+" ms");
     }
     public JsonObject createData() {
         return stats.createData();
@@ -42,5 +36,17 @@ public class PlayerData {
     
     public void updateData() {
         stats.updateData();
+    }
+    
+    public void createOnlineData() {
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Creating Anticheat data for player "+player.getName()+"...");
+        anticheatData = player.isOnline() ? new AnticheatData(player.getPlayer(), this) : null;
+        if(anticheatData == null)
+            ValorantData.getInstance().log("<aqua>[DATA] <red>An error occurred or the player is offline while creating Anticheat data for "+player.getName()+"...");
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Creating Core data for player "+player.getName()+"...");
+        coreData = player.isOnline() ? new CoreData(player.getPlayer(), this) : null;
+        if(coreData == null)
+            ValorantData.getInstance().log("<aqua>[DATA] <red>An error occurred or the player is offline while creating Core data for "+player.getName()+"...");
+        isOnline = anticheatData != null || coreData != null;
     }
 }

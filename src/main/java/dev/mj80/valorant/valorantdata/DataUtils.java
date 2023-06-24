@@ -5,16 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import dev.mj80.valorant.valorantdata.data.PlayerData;
-import net.md_5.bungee.api.ChatColor;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.net.URL;
 import java.util.Scanner;
 
-@SuppressWarnings("deprecation")
 public class DataUtils {
     public static boolean createFile(File file) {
         try {
@@ -31,6 +27,14 @@ public class DataUtils {
         try {
             return (JsonObject) JsonParser.parseReader(new FileReader(file.getCanonicalPath()));
         } catch(Exception exception){
+            exception.printStackTrace();
+            return null;
+        }
+    }
+    public static @Nullable JsonObject parseJSON(String json) {
+        try {
+            return (JsonObject) JsonParser.parseString(json);
+        } catch (Exception exception) {
             exception.printStackTrace();
             return null;
         }
@@ -83,31 +87,6 @@ public class DataUtils {
     public static double round(double n, int r) {
         return Math.round(n * Math.pow(10, r)) / Math.pow(10, r);
     }
-    public static String formatMessage(char codeChar, String message) {
-        message = message.replace("<RED>", "&#fd303a")
-                .replace("<ORANGE>", "&#fcba03").replace("<YELLOW>", "&#fbfe3b")
-                .replace("<DARKGREEN>", "&#2bba7c").replace("<GREEN>", "&#3afba7")
-                .replace("<BLUE>", "&#31afec").replace("<PURPLE>", "&#a452e3")
-                .replace("<MAGENTA>", "&#ea4adf").replace("<PINK>", "&#f6adc6")
-                .replace("<GRAY>", "&#a4c1c2").replace("<DARKGRAY>", "&#787667");
-        char[] chars = message.toCharArray();
-        StringBuilder builder = new StringBuilder();
-        String colorHex = "";
-        boolean isHex = false;
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == codeChar && i < chars.length - 1 && chars[i+1] == '#') {
-                colorHex = "";
-                isHex = true;
-            } else if (isHex) {
-                colorHex += chars[i];
-                isHex = colorHex.length() < 7;
-                if (!isHex)
-                    builder.append(ChatColor.of(colorHex));
-            } else
-                builder.append(chars[i]);
-        }
-        return ChatColor.translateAlternateColorCodes(codeChar, builder.toString());
-    }
     public static String timeUntil(long end) {
         return timeUntil(System.currentTimeMillis(), end);
     }
@@ -148,5 +127,22 @@ public class DataUtils {
             stringBuilder.append(milliseconds).append("ms");
         }
         return stringBuilder.toString().trim();
+    }
+    public static String getTextFromURL(String input) {
+        try {
+            URL url = new URL(input);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+            StringBuilder stringBuilder = new StringBuilder();
+            String text;
+            while ((text = bufferedReader.readLine()) != null) {
+                stringBuilder.append(text);
+                stringBuilder.append(System.lineSeparator());
+            }
+            bufferedReader.close();
+            return stringBuilder.toString().trim();
+        } catch(IOException exception) {
+            exception.printStackTrace();
+            return null;
+        }
     }
 }

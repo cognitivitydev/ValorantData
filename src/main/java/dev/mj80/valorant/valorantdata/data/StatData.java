@@ -134,8 +134,8 @@ public class StatData {
     }
     
     public void saveData() {
-        ValorantData.getInstance().log("&b[DATA] &7Saving data for "+player.getName()+"...");
-        long start = System.currentTimeMillis();
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Saving data for "+player.getName()+"...");
+        long start = System.nanoTime();
         if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVING_DATA.getMessage());
         JsonObject dataFile = DataUtils.parseJSON(file);
         assert dataFile != null;
@@ -163,8 +163,9 @@ public class StatData {
         data.set(3, penaltiesObject);
         
         DataUtils.writeJSONObject(file, dataFile);
-        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(System.currentTimeMillis() - start));
-        ValorantData.getInstance().log("&b[DATA] &7Finished creating data for player "+player.getName()+". Took "+(System.currentTimeMillis() - start));
+        float ms = (float) (System.nanoTime() - start) / 1000000;
+        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(ms));
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms);
     }
     
     public void updateData() {
