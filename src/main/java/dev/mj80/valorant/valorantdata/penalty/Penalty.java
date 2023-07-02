@@ -44,10 +44,11 @@ public class Penalty {
         this.playerUUID = playerUUID;
         this.staffUUID = staffUUID;
         
-        player = ValorantData.getInstance().getServer().getPlayer(playerUUID);
-        staff = ValorantData.getInstance().getServer().getPlayer(staffUUID);
-        playerName = player == null ? "UNKNOWN" : player.getName();
-        staffName = staff == null ? staffUUID == UUID.fromString("00000000-0000-0000-0000-000000000000") ? "CONSOLE" : "UNKNOWN" : staff.getName();
+        player = ValorantData.getInstance().getServer().getOfflinePlayer(playerUUID);
+        staff = ValorantData.getInstance().getServer().getOfflinePlayer(staffUUID);
+        playerName = player.getName() == null ? "UNKNOWN" : player.getName();
+        staffName = staff.getName() == null ? staffUUID.equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+                ? "CONSOLE" : "UNKNOWN" : staff.getName();
         this.reason = reason;
         this.start = start;
         this.duration = duration;
@@ -106,7 +107,6 @@ public class Penalty {
     public void remove(@Nullable String staff) {
         ValorantData.getInstance().getPenaltyManager().removePenalty(this);
         StatData data = ValorantData.getInstance().getData(player).getStats();
-        data.getPenalties().remove(this);
         data.saveData();
         setActive(false);
         String length = DataUtils.timeLength(this.duration);
@@ -114,13 +114,12 @@ public class Penalty {
         String until = DataUtils.timeUntil(end);
         if (staff != null) {
             switch (penaltyType) {
-                case PERMANENT_BAN -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unbanned", staff, staffName, reason, "Permanent"));
+                case PERMANENT_BAN -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unbanned", staff, "banned", staffName, reason, "Permanent"));
                 case TEMPORARY_BAN ->
-                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unbanned", staff, staffName, reason, length + " (" + until + " // " + ends + ")"));
-                case PERMANENT_MUTE -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unmuted", staff, staffName, reason, "Permanent"));
+                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unbanned", staff, "banned", staffName, reason, length + " (" + until + " // " + ends + ")"));
+                case PERMANENT_MUTE -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "permanently unmuted", staff, "muted", staffName, reason, "Permanent"));
                 case TEMPORARY_MUTE ->
-                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unmuted", staff, staffName, reason, length + " (" + until + " // " + ends + ")"));
-                case WARN -> alert(Messages.PENALTY_REMOVED.getMessage(playerName, "unwarned", staff, staffName, reason, "Permanent"));
+                        alert(Messages.PENALTY_REMOVED.getMessage(playerName, "temporarily unmuted", staff, "muted", staffName, reason, length + " (" + until + " // " + ends + ")"));
             }
         }
     }
@@ -181,14 +180,7 @@ public class Penalty {
             }
         }
     }
-    
-    @SuppressWarnings("unused")
-    public boolean isActive() {
-        long time = System.currentTimeMillis();
-        if(penaltyType.isPermanent()) return true;
-        return active && start <= time && time <= end;
-    }
-    
+
     public void alert(Component message) {
         List<Player> onlineStaff = ValorantData.getInstance().getServer().getOnlinePlayers().stream().map(OfflinePlayer::getPlayer)
                 .filter(Objects::nonNull).filter(players -> players.hasPermission("valorant.staff")).toList();
@@ -197,7 +189,14 @@ public class Penalty {
         List<String> lines = List.of(MiniMessage.miniMessage().serialize(message).split("\n"));
         lines.forEach(line -> ValorantData.getInstance().getServer().getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(line)));
     }
-    
+
+    @SuppressWarnings("unused")
+    public boolean isActive() {
+        long time = System.currentTimeMillis();
+        if(penaltyType.isPermanent() && active) return true;
+        return active && start <= time && time <= end;
+    }
+
     private void setActive(boolean active) {
         this.active = active;
         File penaltyFile = ValorantData.getInstance().getPenaltyManager().getPenaltyFile();

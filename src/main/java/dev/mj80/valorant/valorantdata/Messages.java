@@ -79,7 +79,7 @@ public enum Messages {
               <gray>This will %s<gray>."""),
     PENALTY_REMOVED("""
             <aqua>[PENALTY] <white>%s <gray>has been %s by <white>%s<gray>.
-              <gray>Originally banned by: <white>%s
+              <gray>Originally %s by: <white>%s
               <gray>Original reason: <white>"%s"
               <gray>Original penalty length: <white>%s""")
     ;

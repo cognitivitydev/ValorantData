@@ -27,7 +27,7 @@ public final class ValorantData extends JavaPlugin {
     @Getter private static File dataPath;
     @Getter private final ArrayList<PlayerData> dataList = new ArrayList<>();
     @Getter private PenaltyManager penaltyManager;
-    @Getter private PluginManager pluginManager = new PluginManager();
+    @Getter private PluginManager pluginManager;
     @Getter private PluginVersion version;
     
     @Override
@@ -65,17 +65,21 @@ public final class ValorantData extends JavaPlugin {
      */
     @SuppressWarnings("UnusedReturnValue")
     public @NotNull PlayerData createData(OfflinePlayer player) {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         if (player.isOnline() && player.getPlayer() != null)
             Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADING_DATA.getMessage());
         if (dataList.stream().noneMatch(data -> playerEquals(data.getPlayer(), player))) {
             PlayerData data = addData(player);
-            if (player.isOnline())
-                Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis() - start));
+            if (player.isOnline()) {
+                double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
+                Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(ms));
+            }
             return data;
         }
-        if (player.isOnline())
-            Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(System.currentTimeMillis() - start));
+        if (player.isOnline()) {
+            double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
+            Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(ms));
+        }
         return getData(player);
     }
     

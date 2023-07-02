@@ -18,7 +18,7 @@ public class AnticheatData {
         reset();
     }
     
-    public boolean serverGround,nearGround,clientGround,lServerGround,lNearGround,lClientGround,inLiquid,onLiquid,inPowderedSnow,onIce,underBlock,onStairs,onSlab,onSlime,onClimbable,
+    public boolean loaded,serverGround,nearGround,clientGround,lServerGround,lNearGround,lClientGround,inLiquid,onLiquid,inPowderedSnow,onIce,underBlock,onStairs,onSlab,onSlime,onClimbable,
             onSoul,onSoulSand,sprint,lSprint,alertsEnabled,verboseEnabled,isPunished,inWebs;
     public int buffer,verbose,alerts,groundTime,airTime,onLiquidTime,inLiquidTime,soulSandTime;
     public long lastMovement,lastJump,lastSprintOn,lastSprintOff,lastFlightOff,lastFlightOn,lastServerGround,lastClientGround,lastNearGround,lastInLiquid,lastOnLiquid,
@@ -62,6 +62,7 @@ public class AnticheatData {
     }
     
     public void reset() {
+        loaded = false;
         lastSpeed = 0;
         lastJump = 0;
         lastFlightOff = 0;

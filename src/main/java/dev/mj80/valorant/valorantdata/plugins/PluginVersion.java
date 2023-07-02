@@ -18,6 +18,11 @@ public class PluginVersion {
         verifyVersions();
     }
     public void verifyVersions() {
+        JsonObject versions = ValorantData.getInstance().getPluginManager().getPluginVersions();
+        if (versions == null) {
+                ValorantData.getInstance().log("<red>[PLUGINS] <gray>Couldn't check version for the plugin id \""+plugin+"\".");
+            return;
+        }
         JsonObject jsonObject = ValorantData.getInstance().getPluginManager().getPluginVersions().get(plugin).getAsJsonObject();
         updatedName = jsonObject.get("version").getAsString();
         updatedId = jsonObject.get("id").getAsInt();

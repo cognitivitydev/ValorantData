@@ -9,6 +9,7 @@ import dev.mj80.valorant.valorantdata.data.PlayerData;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class DataUtils {
@@ -16,7 +17,7 @@ public class DataUtils {
         try {
             boolean mkdir = file.getParentFile().mkdirs();
             boolean created = file.createNewFile();
-            return mkdir && created;
+            return mkdir || created;
         } catch (IOException exception) {
             exception.printStackTrace();
             return false;
@@ -32,6 +33,7 @@ public class DataUtils {
         }
     }
     public static @Nullable JsonObject parseJSON(String json) {
+        if(json == null) return null;
         try {
             return (JsonObject) JsonParser.parseString(json);
         } catch (Exception exception) {
@@ -140,9 +142,11 @@ public class DataUtils {
             }
             bufferedReader.close();
             return stringBuilder.toString().trim();
+        } catch(UnknownHostException exception) {
+            ValorantData.getInstance().log("<dark_red>[DATA] <red>Cannot read from \""+input+"\": No internet connection.");
         } catch(IOException exception) {
             exception.printStackTrace();
-            return null;
         }
+        return null;
     }
 }

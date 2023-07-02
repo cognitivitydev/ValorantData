@@ -163,9 +163,9 @@ public class StatData {
         data.set(3, penaltiesObject);
         
         DataUtils.writeJSONObject(file, dataFile);
-        float ms = (float) (System.nanoTime() - start) / 1000000;
+        double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
         if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(ms));
-        ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms);
+        ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms+" ms.");
     }
     
     public void updateData() {
