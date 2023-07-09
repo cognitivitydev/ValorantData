@@ -33,7 +33,7 @@ public class CoreData {
     
     @SuppressWarnings("unused")
     public long getTime(long value) {
-        return System.currentTimeMillis()-value;
+        return System.currentTimeMillis() - value;
     }
     
     public void reset() {

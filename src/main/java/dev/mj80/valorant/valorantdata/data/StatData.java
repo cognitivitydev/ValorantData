@@ -21,12 +21,12 @@ import java.util.Objects;
 @Getter @Setter
 public class StatData {
     private final OfflinePlayer player;
-    @NotNull PlayerData data;
-    private File file;
+    @NotNull private final PlayerData data;
+    private final File file;
     
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
     private double damageDealt,damageReceived,particles;
-    private ArrayList<Penalty> penalties = new ArrayList<>();
+    private final ArrayList<Penalty> penalties = new ArrayList<>();
     
     public StatData(OfflinePlayer player, @NotNull PlayerData data) {
         this.player = player;
@@ -190,6 +190,7 @@ public class StatData {
         JsonArray discord = data.get(2).getAsJsonObject().getAsJsonArray("discord");
         discordId = discord.get(0).getAsJsonObject().get("linkId").getAsLong();
         JsonArray penaltiesArray = data.get(3).getAsJsonObject().get("penalties").getAsJsonArray();
+        penalties.clear();
         penalties.addAll(penaltiesArray.asList().stream().map(penalty -> Penalty.of(penalty.getAsInt())).toList());
         DataUtils.writeJSONObject(file, dataFile);
     }

@@ -75,6 +75,10 @@ public class Penalty {
         return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active);
     }
     public static Penalty of(int id) {
+        Penalty penalty = ValorantData.getInstance().getPenaltyManager().getPenalties().stream().filter(penalties -> penalties.getPID() == id).findFirst().orElse(null);
+        if(penalty != null) {
+            return penalty;
+        }
         JsonObject jsonObject = ValorantData.getInstance().getPenaltyManager().getJsonArray().asList()
                 .stream().map(JsonElement::getAsJsonObject).filter(object -> object.getAsJsonObject().get("id").getAsInt() == id).findFirst().orElse(null);
         if(jsonObject != null) {
@@ -105,7 +109,6 @@ public class Penalty {
     
     @SuppressWarnings("unused")
     public void remove(@Nullable String staff) {
-        ValorantData.getInstance().getPenaltyManager().removePenalty(this);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.saveData();
         setActive(false);
@@ -192,9 +195,10 @@ public class Penalty {
 
     @SuppressWarnings("unused")
     public boolean isActive() {
+        if(!active) return false;
+        if(penaltyType.isPermanent()) return true;
         long time = System.currentTimeMillis();
-        if(penaltyType.isPermanent() && active) return true;
-        return active && start <= time && time <= end;
+        return start <= time && time <= end;
     }
 
     private void setActive(boolean active) {
@@ -214,5 +218,9 @@ public class Penalty {
                 }
             }
         }
+    }
+    @Override
+    public String toString() {
+        return "Penalty[id="+pID+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+"]";
     }
 }

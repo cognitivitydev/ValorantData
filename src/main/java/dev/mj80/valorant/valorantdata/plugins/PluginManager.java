@@ -3,9 +3,7 @@ package dev.mj80.valorant.valorantdata.plugins;
 import com.google.gson.JsonObject;
 import dev.mj80.valorant.valorantdata.DataUtils;
 import lombok.Getter;
-
-import javax.annotation.Nullable;
-import java.net.UnknownHostException;
+import org.jetbrains.annotations.Nullable;
 
 public class PluginManager {
     @Getter private final @Nullable JsonObject pluginVersions;

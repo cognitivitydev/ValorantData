@@ -42,6 +42,7 @@ public class PenaltyManager {
         penaltiesObject.add("penalties", penaltiesArray);
         DataUtils.writeJSONObject(penaltyFile, penaltiesObject);
     }
+    @SuppressWarnings("unused")
     public void removePenalty(Penalty penalty) {
         penalties.remove(penalty);
     }
