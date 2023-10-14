@@ -22,6 +22,7 @@ public enum Messages {
             <gray>Penalty ID: <gold>#%s
             
             <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            <dark_gray>Reconnect to generate a link code for appeals.
             """),
     TEMPORARY_BAN_REASON("""
             <red>You have been temporarily banned from ValorantFPS.
@@ -32,6 +33,7 @@ public enum Messages {
             <gray>Penalty ID: <gold>#%s
             
             <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            <dark_gray>Reconnect to generate a link code for appeals.
             """),
     PERMANENT_MUTE_REASON("""
             
@@ -42,6 +44,7 @@ public enum Messages {
             <gray>Penalty ID: <gold>#%s
             
             <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            <dark_gray>Reconnect to generate a link code for appeals.
             """),
     TEMPORARY_MUTE_REASON("""
             
@@ -53,6 +56,7 @@ public enum Messages {
             <gray>Penalty ID: <gold>#%s
             
             <dark_gray>You may appeal this penalty at <aqua><u>discord.gg/example</u>
+            <dark_gray>Reconnect to generate a link code for appeals.
             """),
     KICK_REASON("""
             <red>You have been kicked from ValorantFPS.

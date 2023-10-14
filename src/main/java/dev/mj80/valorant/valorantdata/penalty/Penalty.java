@@ -74,7 +74,8 @@ public class Penalty {
         boolean active = jsonObject.get("active").getAsBoolean();
         return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active);
     }
-    public static Penalty of(int id) {
+    
+    @Nullable public static Penalty of(int id) {
         Penalty penalty = ValorantData.getInstance().getPenaltyManager().getPenalties().stream().filter(penalties -> penalties.getPID() == id).findFirst().orElse(null);
         if(penalty != null) {
             return penalty;
@@ -105,6 +106,15 @@ public class Penalty {
         data.getPenalties().add(this);
         data.saveData();
         setActive(true);
+        if(player != null && player.isOnline() && player.getPlayer() != null) {
+            if (penaltyType.isNotification()) {
+                player.getPlayer().sendMessage(getPenaltyMessage());
+            }
+            if (penaltyType.isKick()) {
+                player.getPlayer().kick(getPenaltyMessage());
+            }
+        }
+        sendPenaltyWarning();
     }
     
     @SuppressWarnings("unused")

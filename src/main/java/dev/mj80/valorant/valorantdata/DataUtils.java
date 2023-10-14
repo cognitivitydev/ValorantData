@@ -24,7 +24,7 @@ public class DataUtils {
         }
     }
     
-    public static @Nullable JsonObject parseJSON(File file) {
+    @Nullable public static JsonObject parseJSON(File file) {
         try {
             return (JsonObject) JsonParser.parseReader(new FileReader(file.getCanonicalPath()));
         } catch(Exception exception){
@@ -32,7 +32,7 @@ public class DataUtils {
             return null;
         }
     }
-    public static @Nullable JsonObject parseJSON(String json) {
+    @Nullable public static JsonObject parseJSON(String json) {
         if(json == null) return null;
         try {
             return (JsonObject) JsonParser.parseString(json);

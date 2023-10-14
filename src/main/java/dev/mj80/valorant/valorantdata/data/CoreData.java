@@ -23,10 +23,10 @@ public class CoreData {
     }
     
     private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled;
-    private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
+    @Deprecated private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
     private int streak;
     private long lastUsedAbility3,lastUsedAbility2,lastUsedAbility1,lastUsedUltimate,lastScopeIn,lastAir,lastJump,lastMovement;
-    private Object agent;
+    private Object agent,team;
     private ArrayList<Object> cheats = new ArrayList<>();
     private BoundingBox box0,box1,box2,box3;
     private Location lastSafeLocation;
