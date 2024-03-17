@@ -33,7 +33,7 @@ public final class ValorantData extends JavaPlugin {
     @Override
     public void onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().getSettings().checkForUpdates(false).bStats(true);
+        PacketEvents.getAPI().getSettings().reEncodeByDefault(true).checkForUpdates(false).bStats(true);
         PacketEvents.getAPI().load();
     }
     
@@ -42,10 +42,10 @@ public final class ValorantData extends JavaPlugin {
         instance = this;
         dataPath = new File(ValorantData.getInstance().getDataFolder().getAbsolutePath() + File.separator + "players");
         penaltyManager = new PenaltyManager();
-        PacketEvents.getAPI().init();
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
+        PacketEvents.getAPI().init();
         getServer().getOnlinePlayers().forEach(this::createData);
         getServer().getScheduler().runTaskTimer(this, this::saveAll, 6000L, 6000L);
         pluginManager = new PluginManager();
