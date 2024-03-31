@@ -26,7 +26,7 @@ public class CoreData {
     @Deprecated private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
     private int streak;
     private long lastUsedAbility3,lastUsedAbility2,lastUsedAbility1,lastUsedUltimate,lastScopeIn,lastAir,lastJump,lastMovement;
-    private Object agent,team;
+    private Object agent,team,match;
     private ArrayList<Object> cheats = new ArrayList<>();
     private BoundingBox box0,box1,box2,box3;
     private Location lastSafeLocation;
