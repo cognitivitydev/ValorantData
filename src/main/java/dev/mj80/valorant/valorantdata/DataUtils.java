@@ -69,17 +69,17 @@ public class DataUtils {
             StringBuilder text = new StringBuilder();
             Scanner scanner = new Scanner(file);
             while(scanner.hasNextLine()) {
-                text.append(scanner.nextLine());
+                text.append(scanner.nextLine()).append("\n");
             }
             if (text.toString().isBlank()) {
                 scanner.close();
-                return "-";
+                return "";
             }
             scanner.close();
             return text.toString();
         } catch(Exception exception) {
             exception.printStackTrace();
-            return "-";
+            return "";
         }
     }
     

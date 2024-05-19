@@ -39,8 +39,9 @@ public class Penalty {
     private final long end;
     private final int pID;
     private boolean active;
+    @Nullable private final String extra;
     
-    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID, boolean active) {
+    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID, boolean active, @Nullable String extra) {
         this.playerUUID = playerUUID;
         this.staffUUID = staffUUID;
         
@@ -56,14 +57,20 @@ public class Penalty {
         this.pID = pID;
         this.penaltyType = PenaltyType.fromPID(pID);
         this.active = active;
+        this.extra = extra;
     }
     
     @SuppressWarnings("unused")
     public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration) {
-        return new Penalty(playerUUID, staffUUID, reason, start, duration, Integer.parseInt(penaltyType.getId() +
-                String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)), false);
+        return generate(playerUUID, staffUUID, penaltyType, reason, start, duration, null);
     }
-    
+
+    @SuppressWarnings("unused")
+    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration, String extra) {
+        return new Penalty(playerUUID, staffUUID, reason, start, duration, Integer.parseInt(penaltyType.getId() +
+                String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)), false, extra);
+    }
+
     public static Penalty of(JsonObject jsonObject) {
         String playerUUID = jsonObject.get("target").getAsString();
         String staffUUID = jsonObject.get("staff").getAsString();
@@ -72,7 +79,8 @@ public class Penalty {
         long duration = jsonObject.get("duration").getAsLong();
         int pID = jsonObject.get("id").getAsInt();
         boolean active = jsonObject.get("active").getAsBoolean();
-        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active);
+        String extra = jsonObject.has("active") ? jsonObject.get("active").getAsString() : null;
+        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active, extra);
     }
     
     @Nullable public static Penalty of(int id) {
@@ -96,6 +104,7 @@ public class Penalty {
         object.addProperty("start", start);
         object.addProperty("duration", duration);
         object.addProperty("active", active);
+        object.addProperty("extra", extra);
         return object;
     }
     
@@ -104,7 +113,7 @@ public class Penalty {
         ValorantData.getInstance().getPenaltyManager().addPenalty(this);
         StatData data = ValorantData.getInstance().getData(player).getStats();
         data.getPenalties().add(this);
-        data.saveData();
+        data.save();
         setActive(true);
         if(player != null && player.isOnline() && player.getPlayer() != null) {
             if (penaltyType.isNotification()) {
@@ -120,7 +129,7 @@ public class Penalty {
     @SuppressWarnings("unused")
     public void remove(@Nullable String staff) {
         StatData data = ValorantData.getInstance().getData(player).getStats();
-        data.saveData();
+        data.save();
         setActive(false);
         String length = DataUtils.timeLength(this.duration);
         String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
@@ -137,8 +146,7 @@ public class Penalty {
         }
     }
     
-    @SuppressWarnings("unused")
-    public Component sendPenaltyWarning() {
+    public void sendPenaltyWarning() {
         String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
         String until = DataUtils.timeUntil(end);
         switch(penaltyType) {
@@ -155,7 +163,6 @@ public class Penalty {
             case WARN ->
                 alert(Messages.PENALTY_ADMINISTERED.getMessage(playerName, "warned", staffName, reason, "<white>never <gray>expire"));
         }
-        return getPenaltyMessage();
     }
     
     public Component getPenaltyMessage() {
@@ -194,7 +201,7 @@ public class Penalty {
         }
     }
 
-    public void alert(Component message) {
+    private void alert(Component message) {
         List<Player> onlineStaff = ValorantData.getInstance().getServer().getOnlinePlayers().stream().map(OfflinePlayer::getPlayer)
                 .filter(Objects::nonNull).filter(players -> players.hasPermission("valorant.staff")).toList();
         onlineStaff.forEach(staff ->

@@ -1,6 +1,7 @@
 package dev.mj80.valorant.valorantdata.data;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import dev.mj80.valorant.valorantdata.DataUtils;
@@ -9,6 +10,7 @@ import dev.mj80.valorant.valorantdata.ValorantData;
 import dev.mj80.valorant.valorantdata.penalty.Penalty;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
+import java.util.logging.Level;
 
 @Getter @Setter
 public class StatData {
@@ -24,175 +27,261 @@ public class StatData {
     @NotNull private final PlayerData data;
     private final File file;
     
-    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,loses,discordId;
+    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories, losses,discordId;
     private double damageDealt,damageReceived,particles;
+    private final ArrayList<String> hashedIps = new ArrayList<>();
     private final ArrayList<Penalty> penalties = new ArrayList<>();
+    private final ArrayList<String> blacklistedCommands = new ArrayList<>();
     
     public StatData(OfflinePlayer player, @NotNull PlayerData data) {
         this.player = player;
         file = new File(ValorantData.getDataPath() + File.separator + player.getUniqueId() + ".json");
-        if (DataUtils.createFile(file) || DataUtils.readFile(file).equals("-")) {
-            DataUtils.writeJSONObject(file, createData());
+        if (DataUtils.createFile(file) || DataUtils.readFile(file).isEmpty()) {
+            DataUtils.writeJSONObject(file, this.create());
         }
-        updateData();
+        load();
         this.data = data;
     }
     
-    public JsonObject createData() {
-        JsonObject particles = new JsonObject();
-        particles.addProperty("particles", this.particles);
-        
-        JsonArray preferencesArray = new JsonArray();
-        preferencesArray.add(particles);
-        
-        JsonObject preferencesObject = new JsonObject();
-        preferencesObject.add("preferences", preferencesArray);
-        
-        JsonObject firstLogin = new JsonObject();
-        long firstPlayed = player.getFirstPlayed();
-        if(firstPlayed == 0) firstPlayed = System.currentTimeMillis();
-        firstLogin.addProperty("firstLogin", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z").format(new Date(firstPlayed)));
-        
-        JsonArray nameHistoryArray = new JsonArray();
-        nameHistoryArray.add(player.getName());
-        
-        JsonObject nameHistory = new JsonObject();
-        nameHistory.add("nameHistory", nameHistoryArray);
-        
-        JsonArray profileArray = new JsonArray();
-        profileArray.add(preferencesObject);
-        profileArray.add(firstLogin);
-        profileArray.add(nameHistory);
-        
-        JsonObject profileObject = new JsonObject();
-        profileObject.add("profile", profileArray);
-        
-        JsonObject kills = new JsonObject();
-        kills.addProperty("kills", this.kills);
-        
-        JsonObject deaths = new JsonObject();
-        deaths.addProperty("deaths", this.deaths);
-        
-        JsonObject assists = new JsonObject();
-        assists.addProperty("assists", this.assists);
-        
-        JsonObject roundsPlayed = new JsonObject();
-        roundsPlayed.addProperty("roundsPlayed", this.roundsPlayed);
-        
-        JsonObject matchesPlayed = new JsonObject();
-        matchesPlayed.addProperty("matchesPlayed", this.matchesPlayed);
-        
-        JsonObject victories = new JsonObject();
-        victories.addProperty("victories", this.victories);
-        
-        JsonObject loses = new JsonObject();
-        loses.addProperty("loses", this.loses);
-        
-        JsonObject damageDealt = new JsonObject();
-        damageDealt.addProperty("damageDealt", this.damageDealt);
-        
-        JsonObject damageReceived = new JsonObject();
-        damageReceived.addProperty("damageReceived", this.damageReceived);
-        
-        JsonArray statisticsArray = new JsonArray();
-        statisticsArray.add(kills);
-        statisticsArray.add(deaths);
-        statisticsArray.add(assists);
-        statisticsArray.add(roundsPlayed);
-        statisticsArray.add(matchesPlayed);
-        statisticsArray.add(victories);
-        statisticsArray.add(loses);
-        statisticsArray.add(damageDealt);
-        statisticsArray.add(damageReceived);
-        
-        JsonObject statisticsObject = new JsonObject();
-        statisticsObject.add("statistics", statisticsArray);
-        
-        JsonObject discordId = new JsonObject();
-        discordId.addProperty("linkId", this.discordId);
-        
-        JsonArray discordArray = new JsonArray();
-        discordArray.add(discordId);
-        
-        JsonObject discordObject = new JsonObject();
-        discordObject.add("discord", discordArray);
-        
-        JsonArray penalties = new JsonArray();
-        JsonObject penaltiesObject = new JsonObject();
-        penaltiesObject.add("penalties", penalties);
-        
-        JsonArray dataArray = new JsonArray();
-        dataArray.add(profileObject);
-        dataArray.add(statisticsObject);
-        dataArray.add(discordObject);
-        dataArray.add(penaltiesObject);
-        
-        JsonObject dataObject = new JsonObject();
-        dataObject.add("data", dataArray);
-        
-        return dataObject;
+    public JsonObject create() {
+        try {
+            JsonObject dataObject = new JsonObject();
+            dataObject.addProperty("version", DataUpdater.getDataVersion());
+
+            /* PROFILE */
+            JsonObject profileObject = new JsonObject();
+
+            JsonObject settingsObject = new JsonObject();
+            settingsObject.addProperty("particles", this.particles);
+            profileObject.add("settings", settingsObject);
+
+            profileObject.add("addresses", new JsonArray());
+
+            long firstPlayed = player.getFirstPlayed();
+            if(firstPlayed == 0) firstPlayed = System.currentTimeMillis();
+            profileObject.addProperty("firstLogin", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z").format(new Date(firstPlayed)));
+
+            JsonArray nameHistoryArray = new JsonArray();
+            nameHistoryArray.add(player.getName());
+            profileObject.add("nameHistory", nameHistoryArray);
+
+            dataObject.add("profile", profileObject);
+
+            /* STATISTICS */
+            JsonObject statisticsObject = new JsonObject();
+
+            statisticsObject.addProperty("kills", this.kills);
+            statisticsObject.addProperty("deaths", this.deaths);
+            statisticsObject.addProperty("assists", this.assists);
+            statisticsObject.addProperty("roundsPlayed", this.roundsPlayed);
+            statisticsObject.addProperty("matchesPlayed", this.matchesPlayed);
+            statisticsObject.addProperty("victories", this.victories);
+            statisticsObject.addProperty("losses", this.losses);
+            statisticsObject.addProperty("damageDealt", this.damageDealt);
+            statisticsObject.addProperty("damageReceived", this.damageReceived);
+
+            dataObject.add("statistics", statisticsObject);
+
+            /* DISCORD */
+            JsonObject discordObject = new JsonObject();
+
+            discordObject.addProperty("id", this.discordId);
+
+            dataObject.add("discord", discordObject);
+
+            /* PENALTIES */
+            dataObject.add("penalties", new JsonArray());
+
+            /* BLACKLISTS */
+            JsonObject blacklistedObject = new JsonObject();
+
+            blacklistedObject.add("commands", new JsonArray());
+
+            dataObject.add("blacklists", blacklistedObject);
+
+            JsonArray dataArray = new JsonArray();
+            dataArray.add(profileObject);
+            dataArray.add(statisticsObject);
+            dataArray.add(discordObject);
+            dataArray.add(blacklistedObject);
+            return dataObject;
+        } catch(Exception exception) {
+            if(player.getPlayer() != null) {
+                player.getPlayer().kick(MiniMessage.miniMessage().deserialize(
+                        "<red>Failed to load your player data! <white>(ID 1)\n" +
+                                "\n" +
+                                "<gray><b>ERROR INFO</b>\n" +
+                                "<white>Error while creating data!\n" +
+                                exception + "\n" +
+                                "\n" +
+                                "<red>Please report this on our Discord: <blue><u>discord.gg/example</u><red>."
+                ));
+            }
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Failed to create player data! (ID 1)", exception);
+            return null;
+        }
     }
     
-    public void saveData() {
-        ValorantData.getInstance().log("<aqua>[DATA] <gray>Saving data for "+player.getName()+"...");
-        long start = System.nanoTime();
-        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVING_DATA.getMessage());
-        JsonObject dataFile = DataUtils.parseJSON(file);
-        assert dataFile != null;
-        JsonArray data = dataFile.getAsJsonArray("data");
-        JsonArray profile = data.get(0).getAsJsonObject().getAsJsonArray("profile");
-        JsonArray preferences = profile.get(0).getAsJsonObject().getAsJsonArray("preferences");
-        set(preferences, 0, "particles", particles);
-        JsonArray statistics = data.get(1).getAsJsonObject().getAsJsonArray("statistics");
-        set(statistics, 0, "kills", kills);
-        set(statistics, 1, "deaths", deaths);
-        set(statistics, 2, "assists", assists);
-        set(statistics, 3, "roundsPlayed", roundsPlayed);
-        set(statistics, 4, "matchesPlayed", matchesPlayed);
-        set(statistics, 5, "victories", victories);
-        set(statistics, 6, "loses", loses);
-        set(statistics, 7, "damageDealt", damageDealt);
-        set(statistics, 8, "damageReceived", damageReceived);
-        JsonArray discord = dataFile.getAsJsonArray("data").get(2).getAsJsonObject().getAsJsonArray("discord");
-        set(discord, 0, "linkId", discordId);
-        JsonArray penaltiesArray = new JsonArray();
-        JsonObject penaltiesObject = new JsonObject();
-        penaltiesObject.add("penalties", penaltiesArray);
-        
-        this.penalties.stream().filter(Objects::nonNull).map(Penalty::getPID).forEach(penaltiesArray::add);
-        data.set(3, penaltiesObject);
-        
-        DataUtils.writeJSONObject(file, dataFile);
-        double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
-        if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(ms));
-        ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms+" ms.");
+    public void save() {
+        try {
+            ValorantData.getInstance().log("<aqua>[DATA] <gray>Saving data for "+player.getName()+"...");
+            long start = System.nanoTime();
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVING_DATA.getMessage());
+            JsonObject dataObject = DataUtils.parseJSON(file);
+            assert dataObject != null;
+
+            /* PROFILE */
+            JsonObject profileObject = dataObject.get("profile").getAsJsonObject();
+
+            JsonObject settingsObject = profileObject.get("settings").getAsJsonObject();
+            settingsObject.addProperty("particles", this.particles);
+
+
+            /* STATISTICS */
+            JsonObject statisticsObject = dataObject.get("statistics").getAsJsonObject();
+
+            statisticsObject.addProperty("kills", this.kills);
+            statisticsObject.addProperty("deaths", this.deaths);
+            statisticsObject.addProperty("assists", this.assists);
+            statisticsObject.addProperty("roundsPlayed", this.roundsPlayed);
+            statisticsObject.addProperty("matchesPlayed", this.matchesPlayed);
+            statisticsObject.addProperty("victories", this.victories);
+            statisticsObject.addProperty("losses", this.losses);
+            statisticsObject.addProperty("damageDealt", this.damageDealt);
+            statisticsObject.addProperty("damageReceived", this.damageReceived);
+
+            /* DISCORD */
+            JsonObject discordObject = dataObject.get("discord").getAsJsonObject();
+
+            discordObject.addProperty("id", this.discordId);
+
+            /* PENALTIES */
+            JsonArray penaltiesArray = dataObject.get("penalties").getAsJsonArray();
+            this.penalties.stream().filter(Objects::nonNull).map(Penalty::getPID).forEach(penaltiesArray::add);
+
+            /* BLACKLISTS */
+            JsonObject blacklistedObject = dataObject.get("blacklists").getAsJsonObject();
+
+            JsonArray commands = blacklistedObject.get("commands").getAsJsonArray();
+            this.blacklistedCommands.stream().filter(Objects::nonNull).forEach(commands::add);
+
+            DataUtils.writeJSONObject(file, dataObject);
+            double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(ms));
+            ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms+" ms.");
+        } catch(Exception exception) {
+            if(player.getPlayer() != null) {
+                player.getPlayer().kick(MiniMessage.miniMessage().deserialize(
+                        "<red>Failed to save your player data! <white>(ID 2)\n" +
+                                "\n" +
+                                "<gray><b>ERROR INFO</b>\n" +
+                                "<white>Error while saving data!\n" +
+                                exception + "\n" +
+                                "\n" +
+                                "<red>Please report this on our Discord: <blue><u>discord.gg/example</u><red>."
+                ));
+            }
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Failed to save player data! (ID 2)", exception);
+        }
+
     }
     
-    public void updateData() {
-        JsonObject dataFile = DataUtils.parseJSON(file);
-        assert dataFile != null;
-        JsonArray data = dataFile.getAsJsonArray("data");
-        JsonArray profile = data.get(0).getAsJsonObject().getAsJsonArray("profile");
-        JsonArray preferences = profile.get(0).getAsJsonObject().getAsJsonArray("preferences");
-        particles = preferences.get(0).getAsJsonObject().get("particles").getAsDouble();
-        JsonArray statistics = data.get(1).getAsJsonObject().getAsJsonArray("statistics");
-        kills = statistics.get(0).getAsJsonObject().get("kills").getAsLong();
-        deaths = statistics.get(1).getAsJsonObject().get("deaths").getAsLong();
-        assists = statistics.get(2).getAsJsonObject().get("assists").getAsLong();
-        roundsPlayed = statistics.get(3).getAsJsonObject().get("roundsPlayed").getAsLong();
-        matchesPlayed = statistics.get(4).getAsJsonObject().get("matchesPlayed").getAsLong();
-        victories = statistics.get(5).getAsJsonObject().get("victories").getAsLong();
-        loses = statistics.get(6).getAsJsonObject().get("loses").getAsLong();
-        damageDealt = statistics.get(7).getAsJsonObject().get("damageDealt").getAsDouble();
-        damageReceived = statistics.get(8).getAsJsonObject().get("damageReceived").getAsDouble();
-        JsonArray nameHistory = profile.get(2).getAsJsonObject().getAsJsonArray("nameHistory");
+    public void load() {
+        try {
+            long start = System.nanoTime();
+            if (player.isOnline())
+                Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADING_DATA.getMessage());
+
+            JsonObject dataObject = DataUtils.parseJSON(file);
+            assert dataObject != null;
+
+            /* PROFILE */
+            JsonObject profile = dataObject.get("profile").getAsJsonObject();
+
+            JsonObject settings = profile.get("settings").getAsJsonObject();
+            this.particles = settings.get("particles").getAsDouble();
+
+            JsonArray nameHistory = profile.get("nameHistory").getAsJsonArray();
+            if (player.getName() != null && !nameHistory.contains(new JsonPrimitive(player.getName())))
+                nameHistory.add(player.getName());
+
+            /* STATISTICS */
+            JsonObject statistics = dataObject.get("statistics").getAsJsonObject();
+
+            this.kills = statistics.get("kills").getAsLong();
+            this.deaths = statistics.get("deaths").getAsLong();
+            this.assists = statistics.get("assists").getAsLong();
+            this.roundsPlayed = statistics.get("roundsPlayed").getAsLong();
+            this.matchesPlayed = statistics.get("matchesPlayed").getAsLong();
+            this.victories = statistics.get("victories").getAsLong();
+            this.losses = statistics.get("losses").getAsLong();
+            this.damageDealt = statistics.get("damageDealt").getAsDouble();
+            this.damageReceived = statistics.get("damageReceived").getAsDouble();
+
+            /* DISCORD */
+            JsonObject discord = dataObject.get("discord").getAsJsonObject();
+
+            discordId = discord.get("id").getAsLong();
+
+            /* PENALTIES */
+            JsonArray penaltiesArray = dataObject.get("penalties").getAsJsonArray();
+
+            penalties.clear();
+            penalties.addAll(penaltiesArray.asList().stream().map(penalty -> Penalty.of(penalty.getAsInt())).toList());
+
+            /* BLACKLISTS */
+            JsonObject blacklistedObject = dataObject.get("blacklists").getAsJsonObject();
+
+            JsonArray commands = blacklistedObject.get("commands").getAsJsonArray();
+            blacklistedCommands.clear();
+            blacklistedCommands.addAll(commands.asList().stream().map(JsonElement::getAsString).toList());
+
+            DataUtils.writeJSONObject(file, dataObject);
+            double ms = DataUtils.round((float) (System.nanoTime() - start) / 1000000, 2);
+            if (player.isOnline())
+                Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADED_DATA.getMessage(ms));
+        } catch(Exception exception) {
+            if(player.getPlayer() != null) {
+                player.getPlayer().kick(MiniMessage.miniMessage().deserialize(
+                        "<red>Failed to load your player data! <white>(ID 3)\n" +
+                                "\n" +
+                                "<gray><b>ERROR INFO</b>\n" +
+                                "<white>Error while loading data!\n" +
+                                exception + "\n" +
+                                "\n" +
+                                "<red>Please report this on our Discord: <blue><u>discord.gg/example</u><red>."
+                ));
+            }
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Failed to load player data! (ID 3)", exception);
+        }
+    }
+    public void update() {
+        JsonObject data = DataUtils.parseJSON(file);
+        assert data != null;
+        int version = data.get("version").getAsInt();
+        int latestVersion = DataUpdater.getDataVersion();
+        if(version < latestVersion) {
+            data = DataUpdater.update(data);
+        } else if(version > latestVersion) {
+            if(player.getPlayer() != null) {
+                player.getPlayer().kick(MiniMessage.miniMessage().deserialize(
+                        "<red>Failed to load your player data! <white>(ID 4)\n" +
+                                "\n" +
+                                "<gray><b>ERROR INFO</b>\n" +
+                                "<white>Invalid version!\n" +
+                                version + " > " + latestVersion+"\n" +
+                                "\n" +
+                                "<red>Please report this on our Discord: <blue><u>discord.gg/example</u><red>."
+                ));
+            }
+        }
+        JsonObject profile = data.get("profile").getAsJsonObject();
+
+        JsonArray nameHistory = profile.get("nameHistory").getAsJsonArray();
         if(player.getName() != null && !nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
-        JsonArray discord = data.get(2).getAsJsonObject().getAsJsonArray("discord");
-        discordId = discord.get(0).getAsJsonObject().get("linkId").getAsLong();
-        JsonArray penaltiesArray = data.get(3).getAsJsonObject().get("penalties").getAsJsonArray();
-        penalties.clear();
-        penalties.addAll(penaltiesArray.asList().stream().map(penalty -> Penalty.of(penalty.getAsInt())).toList());
-        DataUtils.writeJSONObject(file, dataFile);
+
+        DataUtils.writeJSONObject(file, data);
+
     }
     
     private void set(JsonArray jsonArray, int index, String property, Number value) {

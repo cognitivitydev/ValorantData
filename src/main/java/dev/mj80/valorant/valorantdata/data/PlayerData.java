@@ -27,15 +27,15 @@ public class PlayerData {
         ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+(System.currentTimeMillis() - startTime)+" ms");
     }
     public JsonObject createData() {
-        return stats.createData();
+        return stats.create();
     }
     
     public void saveData() {
-        stats.saveData();
+        stats.save();
     }
     
     public void updateData() {
-        stats.updateData();
+        stats.load();
     }
     
     public void createOnlineData() {

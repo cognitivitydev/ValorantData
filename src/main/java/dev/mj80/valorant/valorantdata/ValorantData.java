@@ -120,7 +120,7 @@ public final class ValorantData extends JavaPlugin {
     /**
      * Saves the player's stats to their JSON file.
      * @param player the player (including offline players) to save data to
-     * @see StatData#saveData()
+     * @see StatData#save()
      */
     public void saveData(Player player) {
         dataList.stream().filter(data -> playerEquals(data.getPlayer(), player)).forEach(PlayerData::saveData);

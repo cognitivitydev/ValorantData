@@ -22,14 +22,15 @@ public class CoreData {
         reset();
     }
     
-    private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled;
+    private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled,vanished;
     @Deprecated private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
-    private int streak;
+    private int streak,ultimatePoints;
     private long lastUsedAbility3,lastUsedAbility2,lastUsedAbility1,lastUsedUltimate,lastScopeIn,lastAir,lastJump,lastMovement;
     private Object agent,team,match;
     private ArrayList<Object> cheats = new ArrayList<>();
     private BoundingBox box0,box1,box2,box3;
     private Location lastSafeLocation;
+    private Player spectating = null;
     
     @SuppressWarnings("unused")
     public long getTime(long value) {
