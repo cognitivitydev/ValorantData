@@ -29,6 +29,7 @@ public final class ValorantData extends JavaPlugin {
     @Getter private PenaltyManager penaltyManager;
     @Getter private PluginManager pluginManager;
     @Getter private PluginVersion version;
+    @Getter private boolean loading = true;
     
     @Override
     public void onLoad() {
@@ -50,6 +51,7 @@ public final class ValorantData extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, this::saveAll, 6000L, 6000L);
         pluginManager = new PluginManager();
         version = new PluginVersion("data", "0.0.1", 1);
+        loading = false;
     }
     
     @Override
@@ -66,19 +68,18 @@ public final class ValorantData extends JavaPlugin {
     @SuppressWarnings("UnusedReturnValue")
     public @NotNull PlayerData createData(OfflinePlayer player) {
         long start = System.nanoTime();
-        if (player.isOnline() && player.getPlayer() != null)
-            Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADING_DATA.getMessage());
+        if (player.isOnline() && player.getPlayer() != null) Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADING_DATA.getMessage());
         if (dataList.stream().noneMatch(data -> playerEquals(data.getPlayer(), player))) {
             PlayerData data = addData(player);
             if (player.isOnline()) {
                 double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
-                Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(ms));
+                Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADED_DATA.getMessage(ms));
             }
             return data;
         }
         if (player.isOnline()) {
             double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
-            Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.LOADED_DATA.getMessage(ms));
+            Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADED_DATA.getMessage(ms));
         }
         return getData(player);
     }

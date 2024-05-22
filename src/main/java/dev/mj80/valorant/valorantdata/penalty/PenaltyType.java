@@ -37,8 +37,8 @@ public enum PenaltyType {
      */
     public boolean isNotification() { return this == WARN || this == TEMPORARY_MUTE || this == PERMANENT_MUTE; }
     
-    public static PenaltyType fromPID(int pID) {
-        return Arrays.stream(values()).filter(type -> type.getId() == Integer.parseInt(Integer.toString(Math.abs(pID)).substring(0, 1))).findFirst().orElse(NONE);
+    public static PenaltyType fromID(String id) {
+        return Arrays.stream(values()).filter(type -> type.getId() == Integer.parseInt(id.substring(0, 1))).findFirst().orElse(NONE);
     }
     public static PenaltyType fromString(String name) {
         return Arrays.stream(values()).filter(type -> Arrays.stream(type.getNames()).anyMatch(typeName -> typeName.equalsIgnoreCase(name))).findFirst().orElse(NONE);

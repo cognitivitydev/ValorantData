@@ -11,6 +11,7 @@ import dev.mj80.valorant.valorantdata.penalty.Penalty;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,8 +28,9 @@ public class StatData {
     @NotNull private final PlayerData data;
     private final File file;
     
-    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories, losses,discordId;
-    private double damageDealt,damageReceived,particles;
+    private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,losses,discordId;
+    private double damageDealt,damageReceived;
+    private double particles = 1;
     private final ArrayList<String> hashedIps = new ArrayList<>();
     private final ArrayList<Penalty> penalties = new ArrayList<>();
     private final ArrayList<String> blacklistedCommands = new ArrayList<>();
@@ -126,7 +128,7 @@ public class StatData {
         try {
             ValorantData.getInstance().log("<aqua>[DATA] <gray>Saving data for "+player.getName()+"...");
             long start = System.nanoTime();
-            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVING_DATA.getMessage());
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.SAVING_DATA.getMessage());
             JsonObject dataObject = DataUtils.parseJSON(file);
             assert dataObject != null;
 
@@ -157,7 +159,8 @@ public class StatData {
 
             /* PENALTIES */
             JsonArray penaltiesArray = dataObject.get("penalties").getAsJsonArray();
-            this.penalties.stream().filter(Objects::nonNull).map(Penalty::getPID).forEach(penaltiesArray::add);
+            this.penalties.stream().filter(Objects::nonNull).map(Penalty::getId).filter(id -> !penaltiesArray.asList().stream().map(JsonElement::getAsString).toList().contains(id))
+                    .forEach(penaltiesArray::add);
 
             /* BLACKLISTS */
             JsonObject blacklistedObject = dataObject.get("blacklists").getAsJsonObject();
@@ -167,7 +170,7 @@ public class StatData {
 
             DataUtils.writeJSONObject(file, dataObject);
             double ms = DataUtils.round((float) (System.nanoTime() - start)/1000000, 2);
-            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendMessage(Messages.SAVED_DATA.getMessage(ms));
+            if(player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.SAVED_DATA.getMessage(ms));
             ValorantData.getInstance().log("<aqua>[DATA] <gray>Finished creating data for player "+player.getName()+". Took "+ms+" ms.");
         } catch(Exception exception) {
             if(player.getPlayer() != null) {
@@ -183,14 +186,12 @@ public class StatData {
             }
             ValorantData.getInstance().getLogger().log(Level.SEVERE, "Failed to save player data! (ID 2)", exception);
         }
-
     }
     
     public void load() {
         try {
             long start = System.nanoTime();
-            if (player.isOnline())
-                Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADING_DATA.getMessage());
+            if (player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADING_DATA.getMessage());
 
             JsonObject dataObject = DataUtils.parseJSON(file);
             assert dataObject != null;
@@ -202,8 +203,7 @@ public class StatData {
             this.particles = settings.get("particles").getAsDouble();
 
             JsonArray nameHistory = profile.get("nameHistory").getAsJsonArray();
-            if (player.getName() != null && !nameHistory.contains(new JsonPrimitive(player.getName())))
-                nameHistory.add(player.getName());
+            if (player.getName() != null && !nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
 
             /* STATISTICS */
             JsonObject statistics = dataObject.get("statistics").getAsJsonObject();
@@ -227,7 +227,7 @@ public class StatData {
             JsonArray penaltiesArray = dataObject.get("penalties").getAsJsonArray();
 
             penalties.clear();
-            penalties.addAll(penaltiesArray.asList().stream().map(penalty -> Penalty.of(penalty.getAsInt())).toList());
+            penalties.addAll(penaltiesArray.asList().stream().map(penalty -> Penalty.of(penalty.getAsString())).toList());
 
             /* BLACKLISTS */
             JsonObject blacklistedObject = dataObject.get("blacklists").getAsJsonObject();
@@ -236,10 +236,8 @@ public class StatData {
             blacklistedCommands.clear();
             blacklistedCommands.addAll(commands.asList().stream().map(JsonElement::getAsString).toList());
 
-            DataUtils.writeJSONObject(file, dataObject);
             double ms = DataUtils.round((float) (System.nanoTime() - start) / 1000000, 2);
-            if (player.isOnline())
-                Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADED_DATA.getMessage(ms));
+            if (player.isOnline()) Objects.requireNonNull(player.getPlayer()).sendActionBar(Messages.LOADED_DATA.getMessage(ms));
         } catch(Exception exception) {
             if(player.getPlayer() != null) {
                 player.getPlayer().kick(MiniMessage.miniMessage().deserialize(
@@ -282,11 +280,5 @@ public class StatData {
 
         DataUtils.writeJSONObject(file, data);
 
-    }
-    
-    private void set(JsonArray jsonArray, int index, String property, Number value) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(property, value);
-        jsonArray.set(index, jsonObject);
     }
 }

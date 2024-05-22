@@ -22,7 +22,7 @@ public class CoreData {
         reset();
     }
     
-    private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled,vanished;
+    private boolean inGame,inQueue,staff,scoped,planting,defusing,onGround,packEnabled,vanished,dead;
     @Deprecated private double deltaX,deltaY,deltaZ,deltaXZ,deltaXYZ;
     private int streak,ultimatePoints;
     private long lastUsedAbility3,lastUsedAbility2,lastUsedAbility1,lastUsedUltimate,lastScopeIn,lastAir,lastJump,lastMovement;

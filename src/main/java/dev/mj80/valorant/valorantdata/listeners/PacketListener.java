@@ -17,7 +17,8 @@ public class PacketListener extends PacketListenerAbstract {
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         Player player = (Player) event.getPlayer();
-        if (player != null && ValorantData.getInstance().getData(player) == null && event.getPacketType() != PacketType.Login.Server.DISCONNECT) {
+        if (!ValorantData.getInstance().isLoading() && player != null && ValorantData.getInstance().getData(player) == null
+                && event.getPacketType() != PacketType.Login.Server.DISCONNECT) {
             ValorantData.getInstance().createData(player);
         }
     }
@@ -25,7 +26,8 @@ public class PacketListener extends PacketListenerAbstract {
     @Override
     public void onPacketSend(PacketSendEvent event) {
         Player player = (Player) event.getPlayer();
-        if (player != null && ValorantData.getInstance().getData(player) == null && event.getPacketType() != PacketType.Login.Server.DISCONNECT) {
+        if (!ValorantData.getInstance().isLoading() && player != null && ValorantData.getInstance().getData(player) == null
+                && event.getPacketType() != PacketType.Login.Server.DISCONNECT) {
             ValorantData.getInstance().createData(player);
         }
     }

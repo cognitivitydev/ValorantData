@@ -15,11 +15,14 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Level;
 
 @Getter
 public class Penalty {
@@ -37,25 +40,26 @@ public class Penalty {
     private final long start;
     private final long duration;
     private final long end;
-    private final int pID;
+    @Deprecated(forRemoval = true) private final int pID = -1;
+    private final String id;
     private boolean active;
     @Nullable private final String extra;
     
-    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, int pID, boolean active, @Nullable String extra) {
+    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, String id, boolean active, @Nullable String extra) {
         this.playerUUID = playerUUID;
         this.staffUUID = staffUUID;
         
         player = ValorantData.getInstance().getServer().getOfflinePlayer(playerUUID);
         staff = ValorantData.getInstance().getServer().getOfflinePlayer(staffUUID);
         playerName = player.getName() == null ? "UNKNOWN" : player.getName();
-        staffName = staff.getName() == null ? staffUUID.equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        staffName = staff.getName() == null ? staffUUID.equals(new UUID(0, 0))
                 ? "CONSOLE" : "UNKNOWN" : staff.getName();
         this.reason = reason;
         this.start = start;
         this.duration = duration;
         this.end = start + duration;
-        this.pID = pID;
-        this.penaltyType = PenaltyType.fromPID(pID);
+        this.id = id;
+        this.penaltyType = PenaltyType.fromID(id);
         this.active = active;
         this.extra = extra;
     }
@@ -67,8 +71,27 @@ public class Penalty {
 
     @SuppressWarnings("unused")
     public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration, String extra) {
-        return new Penalty(playerUUID, staffUUID, reason, start, duration, Integer.parseInt(penaltyType.getId() +
-                String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1)), false, extra);
+        return new Penalty(playerUUID, staffUUID, reason, start, duration, generateHash(penaltyType), false, extra);
+    }
+    private static String generateHash(PenaltyType penaltyType) {
+        String input = String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1);
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            final StringBuilder string = new StringBuilder();
+            for (byte b : hash) {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    string.append('0');
+                }
+                string.append(hex);
+            }
+            String trimmed = string.substring(0, 7);
+            return (penaltyType.getId()+trimmed).toUpperCase();
+        } catch(Exception exception) {
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Issue generating hash for penalty #"+input+" (type "+penaltyType.getId()+")", exception);
+            return null;
+        }
     }
 
     public static Penalty of(JsonObject jsonObject) {
@@ -77,19 +100,19 @@ public class Penalty {
         String reason = jsonObject.get("reason").getAsString();
         long start = jsonObject.get("start").getAsLong();
         long duration = jsonObject.get("duration").getAsLong();
-        int pID = jsonObject.get("id").getAsInt();
+        String id = jsonObject.get("id").getAsString();
         boolean active = jsonObject.get("active").getAsBoolean();
         String extra = jsonObject.has("active") ? jsonObject.get("active").getAsString() : null;
-        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, pID, active, extra);
+        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, id, active, extra);
     }
     
-    @Nullable public static Penalty of(int id) {
-        Penalty penalty = ValorantData.getInstance().getPenaltyManager().getPenalties().stream().filter(penalties -> penalties.getPID() == id).findFirst().orElse(null);
+    @Nullable public static Penalty of(String id) {
+        Penalty penalty = ValorantData.getInstance().getPenaltyManager().getPenalties().stream().filter(penalties -> penalties.getId().equals(id.toUpperCase())).findFirst().orElse(null);
         if(penalty != null) {
             return penalty;
         }
         JsonObject jsonObject = ValorantData.getInstance().getPenaltyManager().getJsonArray().asList()
-                .stream().map(JsonElement::getAsJsonObject).filter(object -> object.getAsJsonObject().get("id").getAsInt() == id).findFirst().orElse(null);
+                .stream().map(JsonElement::getAsJsonObject).filter(object -> object.getAsJsonObject().get("id").getAsString().equals(id.toUpperCase())).findFirst().orElse(null);
         if(jsonObject != null) {
             return of(jsonObject);
         } return null;
@@ -97,7 +120,7 @@ public class Penalty {
     
     public JsonObject getAsJson() {
         JsonObject object = new JsonObject();
-        object.addProperty("id", pID);
+        object.addProperty("id", id);
         object.addProperty("target", String.valueOf(playerUUID));
         object.addProperty("staff", String.valueOf(staffUUID));
         object.addProperty("reason", reason);
@@ -169,31 +192,31 @@ public class Penalty {
         switch(penaltyType) {
             case PERMANENT_BAN -> {
                 String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                return Messages.PERMANENT_BAN_REASON.getMessage(reason, banned, pID);
+                return Messages.PERMANENT_BAN_REASON.getMessage(reason, banned, id);
             }
             case TEMPORARY_BAN -> {
                 String banned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
                 String until = DataUtils.timeUntil(end);
-                return Messages.TEMPORARY_BAN_REASON.getMessage(reason, banned, ends, until, pID);
+                return Messages.TEMPORARY_BAN_REASON.getMessage(reason, banned, ends, until, id);
             }
             case PERMANENT_MUTE -> {
                 String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                return Messages.PERMANENT_MUTE_REASON.getMessage(reason, muted, pID);
+                return Messages.PERMANENT_MUTE_REASON.getMessage(reason, muted, id);
             }
             case TEMPORARY_MUTE -> {
                 String muted = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
                 String ends = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(end));
                 String until = DataUtils.timeUntil(end);
-                return Messages.TEMPORARY_MUTE_REASON.getMessage(reason, muted, ends, until, pID);
+                return Messages.TEMPORARY_MUTE_REASON.getMessage(reason, muted, ends, until, id);
             }
             case KICK -> {
                 String kicked = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                return Messages.KICK_REASON.getMessage(reason, kicked, pID);
+                return Messages.KICK_REASON.getMessage(reason, kicked, id);
             }
             case WARN -> {
                 String warned = new SimpleDateFormat("dd/MM/yyyy @ HH:mm:ss z").format(new Date(start));
-                return Messages.WARN_REASON.getMessage(reason, warned, pID);
+                return Messages.WARN_REASON.getMessage(reason, warned, id);
             }
             default -> {
                 return Component.text().asComponent();
@@ -226,7 +249,7 @@ public class Penalty {
             JsonArray penaltiesArray = penaltiesObject.get("penalties").getAsJsonArray();
             for(JsonElement penaltyElement : penaltiesArray.asList()) {
                 JsonObject penalty = penaltyElement.getAsJsonObject();
-                if(penalty.get("id").getAsInt() == pID) {
+                if(penalty.get("id").getAsString().equals(id)) {
                     int index = penaltiesArray.asList().indexOf(penalty);
                     penalty.addProperty("active", active);
                     penaltiesArray.set(index, penalty);
@@ -238,6 +261,6 @@ public class Penalty {
     }
     @Override
     public String toString() {
-        return "Penalty[id="+pID+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+"]";
+        return "Penalty[id="+id+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+"]";
     }
 }
