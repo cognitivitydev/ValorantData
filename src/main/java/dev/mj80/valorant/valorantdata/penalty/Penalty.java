@@ -8,6 +8,7 @@ import dev.mj80.valorant.valorantdata.Messages;
 import dev.mj80.valorant.valorantdata.ValorantData;
 import dev.mj80.valorant.valorantdata.data.StatData;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
@@ -43,9 +44,10 @@ public class Penalty {
     @Deprecated(forRemoval = true) private final int pID = -1;
     private final String id;
     private boolean active;
+    private boolean appealed;
     @Nullable private final String extra;
     
-    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, String id, boolean active, @Nullable String extra) {
+    public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, String id, boolean active, boolean appealed, @Nullable String extra) {
         this.playerUUID = playerUUID;
         this.staffUUID = staffUUID;
         
@@ -61,17 +63,18 @@ public class Penalty {
         this.id = id;
         this.penaltyType = PenaltyType.fromID(id);
         this.active = active;
+        this.appealed = appealed;
         this.extra = extra;
     }
     
     @SuppressWarnings("unused")
-    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration) {
-        return generate(playerUUID, staffUUID, penaltyType, reason, start, duration, null);
+    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration, boolean appealed) {
+        return generate(playerUUID, staffUUID, penaltyType, reason, start, duration, appealed, null);
     }
 
     @SuppressWarnings("unused")
-    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration, String extra) {
-        return new Penalty(playerUUID, staffUUID, reason, start, duration, generateHash(penaltyType), false, extra);
+    public static Penalty generate(UUID playerUUID, UUID staffUUID, PenaltyType penaltyType, String reason, long start, long duration, boolean appealed, String extra) {
+        return new Penalty(playerUUID, staffUUID, reason, start, duration, generateHash(penaltyType), false, appealed, extra);
     }
     private static String generateHash(PenaltyType penaltyType) {
         String input = String.valueOf(ValorantData.getInstance().getPenaltyManager().getJsonArray().size() + 1);
@@ -102,8 +105,9 @@ public class Penalty {
         long duration = jsonObject.get("duration").getAsLong();
         String id = jsonObject.get("id").getAsString();
         boolean active = jsonObject.get("active").getAsBoolean();
-        String extra = jsonObject.has("active") ? jsonObject.get("active").getAsString() : null;
-        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, id, active, extra);
+        boolean appealed = jsonObject.get("appealed").getAsBoolean();
+        String extra = jsonObject.has("extra") && !jsonObject.get("extra").isJsonNull() ? jsonObject.get("extra").getAsString() : null;
+        return new Penalty(UUID.fromString(playerUUID), UUID.fromString(staffUUID), reason, start, duration, id, active, appealed, extra);
     }
     
     @Nullable public static Penalty of(String id) {
@@ -127,6 +131,7 @@ public class Penalty {
         object.addProperty("start", start);
         object.addProperty("duration", duration);
         object.addProperty("active", active);
+        object.addProperty("appealed", appealed);
         object.addProperty("extra", extra);
         return object;
     }
@@ -259,8 +264,27 @@ public class Penalty {
             }
         }
     }
+
+    public void setAppealed(boolean appealed) {
+        this.appealed = appealed;
+        File penaltyFile = ValorantData.getInstance().getPenaltyManager().getPenaltyFile();
+        JsonObject penaltiesObject = DataUtils.parseJSON(penaltyFile);
+        if(penaltiesObject != null) {
+            JsonArray penaltiesArray = penaltiesObject.get("penalties").getAsJsonArray();
+            for(JsonElement penaltyElement : penaltiesArray.asList()) {
+                JsonObject penalty = penaltyElement.getAsJsonObject();
+                if(penalty.get("id").getAsString().equals(id)) {
+                    int index = penaltiesArray.asList().indexOf(penalty);
+                    penalty.addProperty("appealed", appealed);
+                    penaltiesArray.set(index, penalty);
+                    penaltiesObject.add("penalties", penaltiesArray);
+                    DataUtils.writeJSONObject(penaltyFile, penaltiesObject);
+                }
+            }
+        }
+    }
     @Override
     public String toString() {
-        return "Penalty[id="+id+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+"]";
+        return "Penalty[id="+id+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+", appealed="+appealed+"]";
     }
 }
