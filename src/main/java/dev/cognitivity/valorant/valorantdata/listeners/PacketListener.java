@@ -1,11 +1,11 @@
-package dev.mj80.valorant.valorantdata.listeners;
+package dev.cognitivity.valorant.valorantdata.listeners;
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import dev.mj80.valorant.valorantdata.ValorantData;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
 import org.bukkit.entity.Player;
 
 public class PacketListener extends PacketListenerAbstract {

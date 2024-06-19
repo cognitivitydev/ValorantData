@@ -1,14 +1,13 @@
-package dev.mj80.valorant.valorantdata.penalty;
+package dev.cognitivity.valorant.valorantdata.penalty;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.mj80.valorant.valorantdata.DataUtils;
-import dev.mj80.valorant.valorantdata.Messages;
-import dev.mj80.valorant.valorantdata.ValorantData;
-import dev.mj80.valorant.valorantdata.data.StatData;
+import dev.cognitivity.valorant.valorantdata.data.StatData;
+import dev.cognitivity.valorant.valorantdata.DataUtils;
+import dev.cognitivity.valorant.valorantdata.Messages;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
 import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
@@ -45,7 +44,7 @@ public class Penalty {
     private final String id;
     private boolean active;
     private boolean appealed;
-    @Nullable private final String extra;
+    @Nullable private String extra;
     
     public Penalty(UUID playerUUID, UUID staffUUID, String reason, long start, long duration, String id, boolean active, boolean appealed, @Nullable String extra) {
         this.playerUUID = playerUUID;
@@ -283,6 +282,26 @@ public class Penalty {
             }
         }
     }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
+        File penaltyFile = ValorantData.getInstance().getPenaltyManager().getPenaltyFile();
+        JsonObject penaltiesObject = DataUtils.parseJSON(penaltyFile);
+        if(penaltiesObject != null) {
+            JsonArray penaltiesArray = penaltiesObject.get("penalties").getAsJsonArray();
+            for(JsonElement penaltyElement : penaltiesArray.asList()) {
+                JsonObject penalty = penaltyElement.getAsJsonObject();
+                if(penalty.get("id").getAsString().equals(id)) {
+                    int index = penaltiesArray.asList().indexOf(penalty);
+                    penalty.addProperty("extra", extra);
+                    penaltiesArray.set(index, penalty);
+                    penaltiesObject.add("penalties", penaltiesArray);
+                    DataUtils.writeJSONObject(penaltyFile, penaltiesObject);
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "Penalty[id="+id+", player="+playerName+", staff="+staffName+", type="+penaltyType+", duration="+duration+", active="+active+", appealed="+appealed+"]";

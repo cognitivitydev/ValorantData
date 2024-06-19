@@ -1,7 +1,7 @@
-package dev.mj80.valorant.valorantdata.plugins;
+package dev.cognitivity.valorant.valorantdata.plugins;
 
 import com.google.gson.JsonObject;
-import dev.mj80.valorant.valorantdata.DataUtils;
+import dev.cognitivity.valorant.valorantdata.DataUtils;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 

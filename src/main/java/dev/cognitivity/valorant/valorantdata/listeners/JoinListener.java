@@ -1,6 +1,6 @@
-package dev.mj80.valorant.valorantdata.listeners;
+package dev.cognitivity.valorant.valorantdata.listeners;
 
-import dev.mj80.valorant.valorantdata.ValorantData;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

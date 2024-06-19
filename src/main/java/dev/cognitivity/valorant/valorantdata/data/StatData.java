@@ -1,17 +1,16 @@
-package dev.mj80.valorant.valorantdata.data;
+package dev.cognitivity.valorant.valorantdata.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import dev.mj80.valorant.valorantdata.DataUtils;
-import dev.mj80.valorant.valorantdata.Messages;
-import dev.mj80.valorant.valorantdata.ValorantData;
-import dev.mj80.valorant.valorantdata.penalty.Penalty;
+import dev.cognitivity.valorant.valorantdata.DataUtils;
+import dev.cognitivity.valorant.valorantdata.Messages;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
+import dev.cognitivity.valorant.valorantdata.penalty.Penalty;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +30,7 @@ public class StatData {
     private long kills,deaths,assists,roundsPlayed,matchesPlayed,victories,losses,discordId;
     private double damageDealt,damageReceived;
     private double particles = 1;
+    private boolean tosAccepted;
     private final ArrayList<String> hashedIps = new ArrayList<>();
     private final ArrayList<Penalty> penalties = new ArrayList<>();
     private final ArrayList<String> blacklistedCommands = new ArrayList<>();
@@ -66,6 +66,8 @@ public class StatData {
             JsonArray nameHistoryArray = new JsonArray();
             nameHistoryArray.add(player.getName());
             profileObject.add("nameHistory", nameHistoryArray);
+
+            profileObject.addProperty("tos", this.tosAccepted);
 
             dataObject.add("profile", profileObject);
 
@@ -138,6 +140,7 @@ public class StatData {
             JsonObject settingsObject = profileObject.get("settings").getAsJsonObject();
             settingsObject.addProperty("particles", this.particles);
 
+            profileObject.addProperty("tos", this.tosAccepted);
 
             /* STATISTICS */
             JsonObject statisticsObject = dataObject.get("statistics").getAsJsonObject();
@@ -204,6 +207,8 @@ public class StatData {
 
             JsonArray nameHistory = profile.get("nameHistory").getAsJsonArray();
             if (player.getName() != null && !nameHistory.contains(new JsonPrimitive(player.getName()))) nameHistory.add(player.getName());
+
+            this.tosAccepted = profile.get("tos").getAsBoolean();
 
             /* STATISTICS */
             JsonObject statistics = dataObject.get("statistics").getAsJsonObject();

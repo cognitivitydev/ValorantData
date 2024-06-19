@@ -1,10 +1,10 @@
-package dev.mj80.valorant.valorantdata.penalty;
+package dev.cognitivity.valorant.valorantdata.penalty;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.mj80.valorant.valorantdata.DataUtils;
-import dev.mj80.valorant.valorantdata.ValorantData;
+import dev.cognitivity.valorant.valorantdata.DataUtils;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
 import lombok.Getter;
 
 import java.io.File;

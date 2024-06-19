@@ -1,7 +1,7 @@
-package dev.mj80.valorant.valorantdata.plugins;
+package dev.cognitivity.valorant.valorantdata.plugins;
 
 import com.google.gson.JsonObject;
-import dev.mj80.valorant.valorantdata.ValorantData;
+import dev.cognitivity.valorant.valorantdata.ValorantData;
 import lombok.Getter;
 
 public class PluginVersion {

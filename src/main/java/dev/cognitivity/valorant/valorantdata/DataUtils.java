@@ -1,16 +1,18 @@
-package dev.mj80.valorant.valorantdata;
+package dev.cognitivity.valorant.valorantdata;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import dev.mj80.valorant.valorantdata.data.PlayerData;
+import dev.cognitivity.valorant.valorantdata.data.PlayerData;
 
 import org.jetbrains.annotations.Nullable;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 public class DataUtils {
     public static boolean createFile(File file) {
@@ -19,7 +21,7 @@ public class DataUtils {
             boolean created = file.createNewFile();
             return mkdir || created;
         } catch (IOException exception) {
-            exception.printStackTrace();
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't create file "+file.getPath(), exception);
             return false;
         }
     }
@@ -28,7 +30,7 @@ public class DataUtils {
         try {
             return (JsonObject) JsonParser.parseReader(new FileReader(file.getCanonicalPath()));
         } catch(Exception exception){
-            exception.printStackTrace();
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't parse Json from file "+file.getPath(), exception);
             return null;
         }
     }
@@ -37,7 +39,7 @@ public class DataUtils {
         try {
             return (JsonObject) JsonParser.parseString(json);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't parse Json from "+json, exception);
             return null;
         }
     }
@@ -48,7 +50,7 @@ public class DataUtils {
             printWriter.flush();
             printWriter.close();
         } catch(Exception exception) {
-            exception.printStackTrace();
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't write Json to file "+file.getPath(), exception);
         }
     }
     
@@ -64,10 +66,11 @@ public class DataUtils {
     }
     
     public static String readFile(File file) {
+        Scanner scanner = null;
         try {
+            scanner = new Scanner(file);
             createFile(file);
             StringBuilder text = new StringBuilder();
-            Scanner scanner = new Scanner(file);
             while(scanner.hasNextLine()) {
                 text.append(scanner.nextLine()).append("\n");
             }
@@ -78,7 +81,8 @@ public class DataUtils {
             scanner.close();
             return text.toString();
         } catch(Exception exception) {
-            exception.printStackTrace();
+            if(scanner != null) scanner.close();
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't read "+file.getPath(), exception);
             return "";
         }
     }
@@ -132,7 +136,7 @@ public class DataUtils {
     }
     public static String getTextFromURL(String input) {
         try {
-            URL url = new URL(input);
+            URL url = new URI(input).toURL();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
             StringBuilder stringBuilder = new StringBuilder();
             String text;
@@ -144,8 +148,8 @@ public class DataUtils {
             return stringBuilder.toString().trim();
         } catch(UnknownHostException exception) {
             ValorantData.getInstance().log("<dark_red>[DATA] <red>Cannot read from \""+input+"\": No internet connection.");
-        } catch(IOException exception) {
-            exception.printStackTrace();
+        } catch(Exception exception) {
+            ValorantData.getInstance().getLogger().log(Level.SEVERE, "Couldn't read from URL "+input, exception);
         }
         return null;
     }

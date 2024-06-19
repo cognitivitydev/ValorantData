@@ -1,6 +1,6 @@
 name: ValorantData
 version: '${project.version}'
-main: dev.mj80.valorant.valorantdata.ValorantData
+main: dev.cognitivity.valorant.valorantdata.ValorantData
 api-version: 1.20
-authors: [ mj80 ]
+authors: [ cognitivity ]
 description: Data API for ValorantFPS

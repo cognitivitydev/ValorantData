@@ -1,4 +1,4 @@
-package dev.mj80.valorant.valorantdata;
+package dev.cognitivity.valorant.valorantdata;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

@@ -1,4 +1,4 @@
-package dev.mj80.valorant.valorantdata.data;
+package dev.cognitivity.valorant.valorantdata.data;
 
 import lombok.Getter;
 import lombok.Setter;

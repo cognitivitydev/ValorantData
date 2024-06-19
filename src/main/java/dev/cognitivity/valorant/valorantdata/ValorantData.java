@@ -1,18 +1,19 @@
-package dev.mj80.valorant.valorantdata;
+package dev.cognitivity.valorant.valorantdata;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import dev.mj80.valorant.valorantdata.data.AnticheatData;
-import dev.mj80.valorant.valorantdata.data.CoreData;
-import dev.mj80.valorant.valorantdata.data.PlayerData;
-import dev.mj80.valorant.valorantdata.data.StatData;
-import dev.mj80.valorant.valorantdata.listeners.JoinListener;
-import dev.mj80.valorant.valorantdata.listeners.PacketListener;
-import dev.mj80.valorant.valorantdata.listeners.QuitListener;
-import dev.mj80.valorant.valorantdata.penalty.PenaltyManager;
-import dev.mj80.valorant.valorantdata.plugins.PluginManager;
-import dev.mj80.valorant.valorantdata.plugins.PluginVersion;
+import dev.cognitivity.valorant.valorantdata.data.AnticheatData;
+import dev.cognitivity.valorant.valorantdata.data.CoreData;
+import dev.cognitivity.valorant.valorantdata.data.PlayerData;
+import dev.cognitivity.valorant.valorantdata.data.StatData;
+import dev.cognitivity.valorant.valorantdata.listeners.JoinListener;
+import dev.cognitivity.valorant.valorantdata.listeners.PacketListener;
+import dev.cognitivity.valorant.valorantdata.listeners.QuitListener;
+import dev.cognitivity.valorant.valorantdata.penalty.PenaltyManager;
+import dev.cognitivity.valorant.valorantdata.plugins.PluginManager;
+import dev.cognitivity.valorant.valorantdata.plugins.PluginVersion;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -166,6 +167,16 @@ public final class ValorantData extends JavaPlugin {
     
     public void log(String string) {
         getServer().getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(string));
+    }
+
+    public void sendStaffMessage(Object object) {
+        sendStaffMessage(object.toString());
+    }
+
+    public void sendStaffMessage(String string) {
+        Component component = MiniMessage.miniMessage().deserialize("<aqua>[STAFF] <white>"+string);
+        getServer().getConsoleSender().sendMessage(component);
+        ValorantData.getInstance().getServer().getOnlinePlayers().stream().filter(player -> player.hasPermission("valorant.staff")).forEach(staff -> staff.sendMessage(component));
     }
     
     private boolean playerEquals(OfflinePlayer p1, OfflinePlayer p2) {

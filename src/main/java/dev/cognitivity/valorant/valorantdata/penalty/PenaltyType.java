@@ -1,4 +1,4 @@
-package dev.mj80.valorant.valorantdata.penalty;
+package dev.cognitivity.valorant.valorantdata.penalty;
 
 import lombok.Getter;
 
